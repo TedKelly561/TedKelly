@@ -1,61 +1,95 @@
-# Work Order Intake
+# Work Order Intake (M1: AI email intake to ticket)
 
-Paste a messy work-order email and get a clean, ready-to-dispatch service ticket in seconds.
+Work-order emails and PDFs become checked service tickets. Every field is validated, duplicates and return visits are caught, and anything unclear goes to a person with the full story.
 
 **Try it:** https://tedkelly.dev/projects/work-order-intake/
 
+![The intake demo: a messy email becomes a checked ticket, then a duplicate is sent to a person](docs/demo.gif)
+
 ## The problem
 
-Work orders reach a service business as emails, and no two look alike. A warranty company sends a formatted dispatch. A homeowner sends "help!! water everywhere" with the address buried in the middle. A vendor forwards a request and says the claim number will follow.
+Work orders reach a service business as emails, and no two look alike. A warranty company sends a formatted dispatch. A homeowner writes "help!! water everywhere" with the address buried in the middle. A vendor forwards a request and says the claim number will follow. The same claim gets sent twice. A customer writes in about the fridge your tech fixed three days ago.
 
-Someone in the office then retypes each one into the ticket system. That takes about five minutes per order. Details get missed along the way: the alternate phone number, the elderly resident, the $100 service fee the warranty company already collected. Warranty companies also grade you on how fast you make first contact, so a slow handoff costs you.
+Someone in the office retypes each one into the ticket system. That takes about five minutes per order, and details get missed: a phone number with a digit missing, a ZIP outside your area, a claim number in the wrong format that the warranty company will bounce at billing time, a second ticket for a job that is already booked. Warranty companies also grade you on how fast you make first contact, so a slow handoff costs you.
 
 ## What it does
 
-- **Reads the email** and fills in the ticket: customer, phone numbers, service address and ZIP, claim number, warranty company, trade (HVAC, plumbing or appliance), equipment, a one-line problem summary and urgency.
-- **Shows how sure it is.** Each field is marked *found*, *inferred* or *needs review*, so the office checks only what it needs to.
-- **Flags what a person needs to act on:** no claim number yet, a vulnerable occupant, water or gas possibly shut off, a fee already collected, an old unit that may need a replacement quote, a referral to thank.
-- **Starts the first-call clock** using each warranty company's deadline (24 or 48 hours, 4 hours for direct customers, 1 hour for emergencies).
-- **Suggests a technician:** the one in the right trade with the fewest jobs booked today and tomorrow.
-- **Drafts the first text to the customer**, ready to copy and send.
-- **Adds the ticket to today's intake queue**, with live countdowns and a "Mark called" button.
+- **Reads the email or PDF** and fills in the ticket: customer, phone, address and ZIP, claim number, warranty company, trade, equipment, a one-line problem summary and urgency.
+- **Checks every field** against 8 plain rules and shows pass or fail with the reason.
+- **Looks for duplicates and return visits** in your open jobs, completed jobs and today's tickets.
+- **Decides:** a clean email becomes a ticket automatically, with a suggested tech, the first-call deadline and a ready-to-send text to the customer. Anything unclear goes to **Needs a person**.
+- **Logs every run** in an activity log, with the cost of that run.
 
-Every field can be edited before the ticket is saved.
+## Before and after
 
-## How it works
+| | Before | After |
+|---|---|---|
+| Time per work order | ~5 minutes retyping | ~30 seconds to review, or none for clean ones |
+| Field checks | Whatever the person notices | 8 checks on every ticket, every time |
+| Duplicates (same claim sent twice) | Found when two techs show up | Caught before a ticket exists, with the matching job shown |
+| Return visits | Billed as a new job, warranty company pushes back | Flagged as a recall, same tech, no new trip charge |
+| Unclear emails | Sit in the inbox | Go to a person with a suggested next step |
 
-Paste → Review → Dispatch.
+## The safety rules it follows
 
-There are two extraction engines:
+1. **Shadow mode first.** On a first visit it runs in shadow mode: it logs what it *would* do ("WOULD create ticket SH-1066", "WOULD send to a person: duplicate of SH-1050") and writes nothing. In a real install you run it next to your current process for a week, compare, then switch it on.
+2. **Validation on every field.** Phone must have 10 digits. ZIP must be 5 digits and inside the service area (80011 to 80016 for the demo company). The claim number must match the warranty company's format (`NS-######`, `BP#######`, `HAC-#####`) or be marked "to follow". The address needs a house number and street. Trade must be HVAC, Plumbing or Appliance. Customer name and problem must be present. A ticket with any failed check cannot be created automatically.
+3. **Duplicate and return-visit checks.** A duplicate is the same claim number as an open job, or the same phone or address with an open job for the same trade and equipment. A return visit is the same customer and equipment with a job completed in the last 30 days, which is a warranty recall risk. It shows what it matched: job number, date and issue.
+4. **Fail to a person, with full context.** Failed checks, low confidence, duplicates, return visits and emergencies go to a "Needs a person" queue with the original email, what was read, which checks failed and why, and a suggested next step. A person fixes the fields and approves (the checks re-run as they type), or rejects with a reason.
+5. **Never drops work silently.** Nothing is deleted. Rejected items stay listed with their reason, and every run, approval and rejection is in the activity log. If the AI call fails, the built-in reader takes over (in n8n, the email goes to a person).
+6. **Activity log.** Every run is logged with a timestamp: email received → read → checked (n pass / n fail) → duplicate check → decision → action or would-action.
+7. **Rollback-friendly.** In shadow mode nothing is written anywhere, so turning it on or off is safe at any time.
 
-1. **Built-in parser (default).** Plain JavaScript rules that run in your browser, with no key, no server and no cost per email. They read labelled fields ("Claim #:", "Property:"), recognize each warranty company's claim number format and sender domain, normalize phone numbers to `(555) 013-5521`, score keywords to choose the trade, and look for urgency cues such as "water everywhere", "no heat" or "elderly".
-2. **Claude (optional).** Open "Use Claude for extraction", paste your own Anthropic API key and tick the box. The email is sent straight from your browser to `api.anthropic.com` (model `claude-sonnet-5`), which returns strict JSON with the same fields. The key stays in the browser tab (memory, or session storage if you choose) and is never sent anywhere else. If the call fails for any reason, the tool falls back to the built-in parser and says so.
+## What it costs to run
 
-For a real business this would connect to the inbox (or a forwarding address) and the ticket system, so tickets appear in the queue without anyone pasting anything.
+- **Built-in reader:** $0.00 per email. Plain JavaScript rules, no AI, no server.
+- **With AI (Claude):** less than one cent per email, typically about $0.005 to $0.01. The demo shows the cost of each run, a running total and the monthly cost at 150 emails (around $1). Prices are assumed list prices for `claude-sonnet-5` ($2 / $10 per million input / output tokens); the estimate uses the API's reported token counts, or about 4 characters per token. Check current pricing.
+- **Running it for real:** the n8n version runs self-hosted (from about $5 a month for a small server) or on n8n Cloud.
 
-## For developers
+## Try it
 
-- `index.html`: page markup
-- `app.css`: page styles (shared tokens come from `../shared/demo.css`)
-- `app.js`: the parser (`window.Intake`, pure functions you can test in Node) plus the UI
-- `../shared/data.js`: the fictional company, techs, vendors, jobs and sample emails (`window.SUMMIT`)
+https://tedkelly.dev/projects/work-order-intake/
 
-Quick parser test in Node:
+1. With shadow mode on, click a few emails in the inbox. Watch the decision, the checks and the activity log. Nothing is created.
+2. Turn shadow mode off. Click **Harbor Appliance Care** (a forwarded email with the claim number "to follow"): it becomes ticket SH-1066.
+3. Click **Resend of an open job**: it is the same claim as SH-1050, so it goes to **Needs a person** instead of becoming a second ticket.
+4. Click **Out of area, phone missing a digit**. Approve is blocked. Fix the phone and ZIP in the ticket fields and approve it.
+5. Click **Load sample PDF** to run a PDF work order through the same steps.
+
+To try the AI path, open "Use Claude to read the email" and paste your own Anthropic API key. It goes straight from your browser to `api.anthropic.com` and nowhere else.
+
+![Desktop screenshot](docs/screenshot.png)
+
+## n8n version
+
+The same flow as an importable n8n workflow: Gmail trigger → Claude (Messages API, key from an environment variable) → validation rules → duplicate check against a Google Sheet → shadow-mode switch → Slack message to a person, or a new row in the Tickets sheet. Failed AI calls retry 3 times and then go to a person; an error workflow alerts Slack. See [`n8n/README.md`](n8n/README.md).
+
+## How it is built
+
+- `index.html`, `app.css`: the page (shared tokens from `../shared/demo.css`).
+- `app.js`: `window.Intake`, pure functions you can run in Node (`parse`, `validate`, `checkHistory`, `decide`, `evaluate`, cost estimates, the extra sample emails), plus the UI.
+- `samples/sample-work-order.pdf`: a synthetic Northstar Home Warranty work order. PDFs are read in the browser with pdf.js (loaded from cdnjs on first use).
+- `n8n/`: the n8n workflow and its error workflow.
+- `../shared/data.js`: the fictional company, techs, vendors, customers and jobs (`window.SUMMIT`).
+
+Run the pipeline in Node:
 
 ```js
 global.window = global;
 require('../shared/data.js');
-const Intake = require('./app.js');
-const e = SUMMIT.sampleEmails[1];
-console.log(Intake.parse(`From: ${e.from}\nSubject: ${e.subject}\n\n${e.body}`, SUMMIT));
+const I = require('./app.js');
+const e = I.SAMPLES[0]; // resend of an open job
+const r = I.parse(`From: ${e.from}\nSubject: ${e.subject}\n\n${e.body}`, SUMMIT);
+const ev = I.evaluate(I.toTicket(r), r, SUMMIT, { tickets: [], pending: [] });
+console.log(ev.decision.route, ev.history.duplicates, ev.rules);
 ```
 
-The queue is stored in `localStorage` (wrapped in try/catch, so it still works in a private window, just without saving).
+Tickets, the Needs a person queue, the activity log and the shadow-mode setting are saved in `localStorage` (wrapped in try/catch, so it still works in a private window, just without saving).
 
 ## Built with
 
-Plain HTML, CSS and JavaScript, with no framework and no build step. It is hosted on GitHub Pages. Claude via the Anthropic Messages API is optional.
+Plain HTML, CSS and JavaScript, no framework and no build step, hosted on GitHub Pages. pdf.js for PDFs. Claude via the Anthropic Messages API is optional. n8n for the production version.
 
 ## Note
 
-Summit Home Services and its warranty partners are fictional. Every name, address, phone number and claim number in this demo is made up.
+Summit Home Services, Northstar Home Warranty, Bluepeak Protection Plans and Harbor Appliance Care are fictional. Every name, address, phone number and claim number in this demo is made up.

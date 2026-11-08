@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Work Order Intake · Ted Kelly</title>
-<meta name="description" content="Paste a messy work-order email and get a clean, structured service ticket in seconds. A demo by Ted Kelly with fictional data.">
+<meta name="description" content="Work-order emails and PDFs become checked service tickets. Every field is validated, duplicates and return visits are caught, and anything unclear goes to a person. A demo by Ted Kelly with fictional data.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,38 +18,55 @@
 <div class="demo-bar"><a href="/">← Ted Kelly</a><span class="pill">DEMO</span><span>Fictional company & data</span><span class="spacer"></span><a href="https://github.com/TedKelly561/work-order-intake">View code</a></div>
 
 <header class="app-head">
-  <div class="co">Summit Home Services · Office tools</div>
-  <h1>Work Order Intake</h1>
-  <p>Work orders show up as messy emails: warranty dispatches, panicked customers, forwards with no claim number. Paste one in and get a clean ticket, a suggested tech and a ready-to-send text to the customer.</p>
+  <div class="co">Summit Home Services · Office tools · M1</div>
+  <h1>Work orders in, checked tickets out. Nothing slips through.</h1>
+  <p>Every work-order email or PDF is read, every field is checked, and it is matched against open jobs and recent visits. Clean ones become tickets. Anything unclear goes to a person with the full story, never into a black hole.</p>
 </header>
 
-<section class="how wrap" aria-label="How it works">
-  <ol class="steps">
-    <li><span class="step-n mono">1</span><div><b>Paste</b><span>Drop in the email, however messy.</span></div></li>
-    <li><span class="step-n mono">2</span><div><b>Review</b><span>Every field is filled and flagged if unsure.</span></div></li>
-    <li><span class="step-n mono">3</span><div><b>Dispatch</b><span>Assign the tech, text the customer, start the clock.</span></div></li>
-  </ol>
-  <p class="how-value">Saves ~5 minutes and a retyping error on every work order.</p>
+<section class="wrap outcomes" aria-label="What it changes">
+  <div class="oc"><b>5 min → 30 s</b><span>per work order: review instead of retyping</span></div>
+  <div class="oc"><b>8 checks</b><span>on every ticket: phone, ZIP, service area, claim #…</span></div>
+  <div class="oc"><b>0 dropped</b><span>duplicates, recalls and anything unclear go to a person</span></div>
+  <div class="oc"><b>&lt; 1¢</b><span>per email with AI, $0 with the built-in reader</span></div>
 </section>
 
 <main class="wrap">
+  <section class="card modebar" aria-label="Run mode and cost">
+    <div class="mode">
+      <label class="switch" for="shadow">
+        <input type="checkbox" id="shadow" role="switch" aria-describedby="shadow-desc">
+        <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+        <span class="sw-label">Shadow mode <span class="sw-state" id="shadow-state">ON</span></span>
+      </label>
+      <p id="shadow-desc" class="small"></p>
+    </div>
+    <div class="cost" id="cost" aria-live="polite"></div>
+  </section>
+
   <div class="intake">
     <section class="card panel input-panel" aria-labelledby="in-h">
       <div class="panel-h">
-        <h2 id="in-h">Incoming email</h2>
-        <span class="muted small">Pick a sample or paste your own</span>
+        <h2 id="in-h">Inbox</h2>
+        <span class="muted small">Pick an email, load a PDF or paste your own</span>
       </div>
 
       <div class="inbox" id="samples" role="group" aria-label="Sample inbox"></div>
 
-      <label for="email" class="ta-label">Email (subject and body)</label>
-      <textarea id="email" rows="14" spellcheck="false" placeholder="From: someone@example.com&#10;Subject: Water heater leaking&#10;&#10;Paste the whole email here…"></textarea>
+      <div class="pdf-row">
+        <button type="button" class="btn ghost small" id="pdf-sample">Load sample PDF</button>
+        <label class="btn ghost small file-btn" for="pdf-file">Upload a PDF</label>
+        <input type="file" id="pdf-file" accept="application/pdf,.pdf" class="sr-only">
+        <span class="muted small" id="pdf-status" aria-live="polite"></span>
+      </div>
+
+      <label for="email" class="ta-label">Email or PDF text</label>
+      <textarea id="email" rows="11" spellcheck="false" placeholder="From: someone@example.com&#10;Subject: Water heater leaking&#10;&#10;Paste the whole email here…"></textarea>
 
       <details class="claude">
-        <summary>Use Claude for extraction <span class="chip">optional</span></summary>
+        <summary>Use Claude to read the email <span class="chip">optional</span></summary>
         <div class="claude-body">
-          <p class="muted small">The built-in parser runs entirely in your browser and needs no key. To compare it with an AI model, paste your own Anthropic API key. The key stays in this tab (memory, or session storage if you tick the box) and is sent <b>only</b> to <span class="mono">api.anthropic.com</span>. Nothing goes to Ted or any other server.</p>
-          <label class="check"><input type="checkbox" id="use-claude"> Use Claude for the next ticket</label>
+          <p class="muted small">The built-in reader runs entirely in your browser: no key, no cost. To compare it with an AI model, paste your own Anthropic API key. The key stays in this tab (memory, or session storage if you tick the box) and is sent <b>only</b> to <span class="mono">api.anthropic.com</span>. Nothing goes to Ted or any other server.</p>
+          <label class="check"><input type="checkbox" id="use-claude"> Use Claude for the next email</label>
           <label for="api-key">Anthropic API key</label>
           <input type="password" id="api-key" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
           <label class="check"><input type="checkbox" id="remember-key"> Remember for this tab only</label>
@@ -58,30 +75,45 @@
       </details>
 
       <div class="row in-actions">
-        <button type="button" class="btn" id="create">Create ticket</button>
+        <button type="button" class="btn" id="create">Process email</button>
         <button type="button" class="btn ghost" id="clear-email">Clear</button>
         <span class="muted small kbd-hint">or Ctrl + Enter</span>
       </div>
       <p id="status" class="status" role="status" aria-live="polite"></p>
     </section>
 
-    <section class="card panel ticket" id="ticket" aria-label="Drafted ticket" aria-live="polite">
-      <p class="muted">Drafting ticket…</p>
+    <section class="card panel ticket" id="ticket" aria-label="Result for this email">
+      <div class="t-empty muted">
+        <p><b>Pick an email from the inbox</b> to see it read, checked and routed.</p>
+        <p class="small">Every run goes: received → read → 8 checks → duplicate &amp; return-visit check → decision → action.</p>
+      </div>
     </section>
   </div>
 
-  <section class="card panel queue-panel" aria-labelledby="q-h">
-    <div class="panel-h">
-      <h2 id="q-h">Today's intake queue <span class="chip" id="qcount">0</span></h2>
-      <button type="button" class="btn ghost small" id="qclear" hidden>Clear demo queue</button>
+  <section class="card panel lists" id="lists" aria-label="Queues and activity log">
+    <div class="tabs" role="tablist" aria-label="Queues and log">
+      <button type="button" role="tab" id="tab-tickets" aria-controls="pane-tickets" data-tab="tickets">Tickets created <span class="chip" id="n-tickets">0</span></button>
+      <button type="button" role="tab" id="tab-person" aria-controls="pane-person" data-tab="person">Needs a person <span class="chip" id="n-person">0</span></button>
+      <button type="button" role="tab" id="tab-log" aria-controls="pane-log" data-tab="log">Activity log <span class="chip" id="n-log">0</span></button>
     </div>
-    <div id="queue" class="queue"></div>
+    <div class="pane" role="tabpanel" id="pane-tickets" aria-labelledby="tab-tickets">
+      <div class="pane-h"><p class="muted small">Tickets the tool created on its own, or that a person approved. Saved in this browser only.</p><button type="button" class="btn ghost small" id="qclear" hidden>Clear demo tickets</button></div>
+      <div id="queue" class="queue"></div>
+    </div>
+    <div class="pane" role="tabpanel" id="pane-person" aria-labelledby="tab-person" hidden>
+      <div class="pane-h"><p class="muted small">Anything unclear lands here with the email, what was read, what failed and a suggested next step. A person fixes and approves it, or rejects it with a reason.</p><button type="button" class="btn ghost small" id="pclear" hidden>Clear demo items</button></div>
+      <div id="person" class="person-list"></div>
+    </div>
+    <div class="pane" role="tabpanel" id="pane-log" aria-labelledby="tab-log" hidden>
+      <div class="pane-h"><p class="muted small" id="log-sum">Every run, newest first.</p><button type="button" class="btn ghost small" id="lclear" hidden>Clear log</button></div>
+      <ol id="log" class="log"></ol>
+    </div>
   </section>
 </main>
 
 <footer class="demo-foot">
-  Summit Home Services is a fictional company. Every name, address, phone number and claim number here is made up.
-  Built by <a href="/">Ted Kelly</a> with plain HTML, CSS and JavaScript.
+  Summit Home Services and Northstar Home Warranty are fictional. Every name, address, phone number and claim number here is made up.
+  Built by <a href="/">Ted Kelly</a> with plain HTML, CSS and JavaScript. The same flow also ships as an <a href="n8n/m1-email-intake.json">importable n8n workflow</a>.
 </footer>
 
 <script src="../shared/data.js"></script>

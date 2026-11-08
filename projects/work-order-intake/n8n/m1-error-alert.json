@@ -1,0 +1,64 @@
+{
+  "name": "M1 · Error alert",
+  "nodes": [
+    {
+      "id": "22a4c6aa-1952-51d0-8746-b8cb6abc5fc0",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3123faef-53d2-5540-9184-2cf6ab372b9b",
+      "name": "Slack: intake failed",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#office-intake"
+        },
+        "text": "={{ ':rotating_light: *M1 email intake failed.* Check the inbox by hand until it is fixed.\\nWorkflow: ' + $json.workflow.name + '\\nNode: ' + ($json.execution.lastNodeExecuted || '?') + '\\nError: ' + ($json.execution.error?.message || '?') + '\\nExecution: ' + ($json.execution.url || '') }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE",
+          "name": "Slack account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack: intake failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

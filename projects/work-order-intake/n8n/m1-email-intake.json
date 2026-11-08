@@ -1,0 +1,615 @@
+{
+  "name": "M1 · Email intake to ticket (Summit demo)",
+  "nodes": [
+    {
+      "id": "2d1695a7-804a-5d81-930b-75e1c78bc23d",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -40
+      ],
+      "parameters": {
+        "width": 640,
+        "height": 220,
+        "content": "## M1 · Email intake to ticket\nGmail → Claude reads the email → 8 validation rules → duplicate & return-visit check (Jobs sheet) → shadow mode? → ticket, or a person on Slack.\n\n**Shadow mode is ON unless the variable `M1_SHADOW_MODE` is `false`.** In shadow mode it only writes to the Log sheet.\n\nNeeds: env var `ANTHROPIC_API_KEY`, Gmail, Google Sheets and Slack credentials, and a Google Sheet ID. See n8n/README.md. Synthetic data only."
+      }
+    },
+    {
+      "id": "afc6fb6f-baeb-5331-a884-d4e9b5cf79e3",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "label:work-orders"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "f6895498-9197-5c87-bddf-d9d062b67439",
+      "name": "Build email text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Turn the Gmail message into plain text for the AI, and read the shadow-mode switch.\n// Shadow mode defaults to ON: nothing is written to the Tickets sheet until you turn it off.\nlet flag;\ntry { flag = $vars.M1_SHADOW_MODE; } catch (e) {}\nif (flag === undefined || flag === null || flag === '') { try { flag = $env.M1_SHADOW_MODE; } catch (e) {} }\nconst shadow = String(flag ?? 'true').toLowerCase() !== 'false';\n\nconst m = $json;\nconst from = m.from?.text || m.from?.value?.[0]?.address || m.from || '';\nconst subject = m.subject || '';\nconst body = (m.text || m.textAsHtml || m.snippet || '').toString().replace(/\\r/g, '').trim();\nreturn {\n  json: {\n    message_id: m.id || m.messageId || '',\n    received_at: m.date || new Date().toISOString(),\n    from: String(from), subject, shadow,\n    email_text: `From: ${from}\\nSubject: ${subject}\\n\\n${body}`.slice(0, 20000),\n  },\n};",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "a1a9f04d-5d04-5824-ade3-a86523beea7b",
+      "name": "Claude: extract fields",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.ANTHROPIC_API_KEY }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'claude-sonnet-5',\n  max_tokens: 1024,\n  system: 'You are the intake assistant for a home service company (HVAC, plumbing, appliance repair). Read the work-order email and reply with ONLY a JSON object, no prose.',\n  messages: [{ role: 'user', content: 'Vendors: Northstar Home Warranty (V1, claims NS-######), Bluepeak Protection Plans (V2, claims BP#######), Harbor Appliance Care (V3, claims HAC-#####), direct customer (V0).\\nReturn JSON with keys: customerName, phones (array, \"(555) 013-5521\" format), address (street only), zip, claimNumber, claimToFollow (true if the email says the claim number will follow), vendorId, trade (HVAC|Plumbing|Appliance), equipment, problemSummary (one sentence), urgency (Emergency|High|Normal). Use null when a value is not in the email. Do not invent data.\\n\\nEMAIL:\\n' + $json.email_text }]\n}) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "18d27af5-28aa-5eae-b4a1-0caf7c525b80",
+      "name": "Parse Claude reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        220
+      ],
+      "parameters": {
+        "jsCode": "// Read Claude's JSON reply. If it is not valid JSON, keep the email and send it to a person.\nconst res = $json;\nconst text = (res.content || []).filter(c => c.type === 'text').map(c => c.text).join('');\nconst src = $('Build email text').item.json;\nlet f = {}, parse_error = '';\ntry { f = JSON.parse(text.replace(/```(?:json)?/g, '').match(/\\{[\\s\\S]*\\}/)[0]); }\ncatch (e) { parse_error = 'AI reply was not valid JSON'; }\nconst usage = res.usage || {};\n// Assumed prices for claude-sonnet-5: $2 input / $10 output per million tokens. Estimate; check current pricing.\nconst cost = ((usage.input_tokens || 0) * 2 + (usage.output_tokens || 0) * 10) / 1e6;\nreturn { json: { ...src, ...{\n  customer: f.customerName || '', phone: (f.phones || [])[0] || '', address: f.address || '', zip: f.zip || '',\n  claim: f.claimNumber || '', claim_to_follow: !!f.claimToFollow, vendor_id: f.vendorId || 'V0', trade: f.trade || '',\n  equipment: f.equipment || '', problem: f.problemSummary || '', urgency: f.urgency || 'Normal',\n  parse_error, cost_usd: Number(cost.toFixed(5)),\n} } };",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "3d3667c7-66f4-5a3c-9c84-f58d3e3da084",
+      "name": "Extraction failed: to a person",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        460
+      ],
+      "parameters": {
+        "jsCode": "// The AI call failed after all retries. Never drop the email: send it to a person.\nconst src = $('Build email text').item.json;\nconst err = $json.error?.message || $json.error || 'unknown error';\nreturn { json: { ...src, route: 'person', checks_passed: 0, checks_failed: 0, duplicate_of: '', recall_of: '',\n  reasons: 'AI extraction failed after 3 tries: ' + err, next_step: 'Read the email and create the ticket by hand.',\n  ticket_id: '', action: (src.shadow ? 'WOULD send to a person: ' : 'Sent to a person: ') + 'AI extraction failed',\n  cost_usd: 0, logged_at: new Date().toISOString() } };",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "07fb6749-c66b-51bb-8c8e-056ebad55e39",
+      "name": "Validate fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        220
+      ],
+      "parameters": {
+        "jsCode": "// Validation rules on every field. Each rule: pass / warn / fail with a plain-English reason.\n// Any failed rule means the ticket is NOT created automatically.\nconst t = $json;\nconst AREA = [80011, 80016];\nconst FORMATS = { V1: [/^NS-\\d{6}$/, 'NS-######', 'Northstar'], V2: [/^BP\\d{7}$/, 'BP#######', 'Bluepeak'], V3: [/^HAC-\\d{5}$/, 'HAC-#####', 'Harbor'] };\nconst rules = [];\nconst add = (id, ok, reason, warn) => rules.push({ id, status: ok ? (warn ? 'warn' : 'pass') : 'fail', reason });\nconst digits = String(t.phone).replace(/\\D/g, '').replace(/^1(?=\\d{10}$)/, '');\nadd('name', /[A-Za-z]{2,}/.test(t.customer), t.customer ? `Found \"${t.customer}\"` : 'No customer name');\nadd('phone', digits.length === 10, t.phone ? `\"${t.phone}\" has ${digits.length} digits; needs 10` : 'No phone number');\nadd('address', /^\\d+[A-Za-z]?\\s+[A-Za-z]/.test(String(t.address).trim()), t.address ? `\"${t.address}\"` : 'No service address');\nconst zipOk = /^\\d{5}$/.test(String(t.zip));\nadd('zip', zipOk, zipOk ? `${t.zip} is 5 digits` : `\"${t.zip || ''}\" is not a 5-digit ZIP`);\nadd('area', zipOk && +t.zip >= AREA[0] && +t.zip <= AREA[1], zipOk ? `${t.zip} ${+t.zip >= AREA[0] && +t.zip <= AREA[1] ? 'is inside' : 'is outside'} the service area (80011-80016)` : 'No valid ZIP to check');\nconst fmt = FORMATS[t.vendor_id];\nconst claim = String(t.claim || '').toUpperCase();\nif (!fmt) add('claim', true, 'Direct customer: no claim needed');\nelse if (fmt[0].test(claim)) add('claim', true, `${claim} matches ${fmt[2]} format ${fmt[1]}`);\nelse if (!claim && t.claim_to_follow) add('claim', true, `${fmt[2]} says the claim number is to follow`, true);\nelse add('claim', false, claim ? `\"${claim}\" does not match ${fmt[2]} format ${fmt[1]}` : `${fmt[2]} jobs need a claim number (${fmt[1]}) or \"to follow\"`);\nadd('trade', ['HVAC', 'Plumbing', 'Appliance'].includes(t.trade), t.trade ? `${t.trade}` : 'Trade not worked out');\nadd('problem', String(t.problem).trim().length >= 8, 'Problem described');\nif (t.parse_error) add('ai_reply', false, t.parse_error);\nconst failed = rules.filter(r => r.status === 'fail');\nreturn { json: { ...t, rules, checks_passed: rules.length - failed.length, checks_failed: failed.length,\n  failed_rules: failed.map(r => `${r.id}: ${r.reason}`).join('; ') } };",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "29556d88-3379-5b03-aeaa-af1b393f4211",
+      "name": "Load jobs sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        220
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Jobs"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE",
+          "name": "Google Sheets account"
+        }
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "6b14bf3b-e512-5e63-9989-f56daa3a3850",
+      "name": "Duplicate & recall check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        220
+      ],
+      "parameters": {
+        "jsCode": "// Duplicate & return-visit check against the Jobs sheet, then decide the route.\n// duplicate: same claim on an open job, or same phone/address with an open job for the same trade.\n// return visit: same phone/address, same trade, job completed in the last 30 days.\nconst OPEN = ['new', 'scheduled', 'en_route', 'in_progress', 'waiting_parts', 'waiting for a person'];\nconst rows = $input.all().map(i => i.json).filter(r => r && r.id);\nconst digits = s => String(s || '').replace(/\\D/g, '').replace(/^1(?=\\d{10}$)/, '');\nconst addr = s => String(s || '').toLowerCase().replace(/[.,#]/g, ' ').replace(/\\s+/g, ' ').trim();\nlet nextNo = Math.max(1065, ...rows.map(r => Number(String(r.id).replace(/\\D/g, '')) || 0)) + 1;\nconst now = Date.now();\nreturn $('Validate fields').all().map(item => {\n  const t = item.json;\n  const dup = [], recall = [];\n  for (const r of rows) {\n    const sameClaim = t.claim && r.claim && String(r.claim).toUpperCase() === String(t.claim).toUpperCase();\n    const sameCust = (digits(t.phone).length === 10 && digits(r.phone) === digits(t.phone)) || (t.address && addr(r.address) === addr(t.address));\n    const open = OPEN.includes(String(r.status).toLowerCase());\n    const days = r.completed_at ? (now - new Date(r.completed_at)) / 86400000 : null;\n    if (sameClaim && open) dup.push(`${r.id} (same claim ${t.claim})`);\n    else if (sameCust && open && r.trade === t.trade) dup.push(`${r.id} (open ${r.trade} job: ${r.issue})`);\n    else if (sameCust && !open && days !== null && days <= 30 && r.trade === t.trade) recall.push(`${r.id} (${r.issue}, completed ${Math.round(days)} days ago)`);\n  }\n  const reasons = [];\n  if (t.urgency === 'Emergency') reasons.push('Emergency: call the customer now');\n  if (dup.length) reasons.push('Possible duplicate of ' + dup.join(', '));\n  if (recall.length) reasons.push('Return visit (warranty recall risk): ' + recall.join(', '));\n  if (t.checks_failed) reasons.push('Failed checks: ' + t.failed_rules);\n  const route = reasons.length ? 'person' : 'create';\n  const next_step = t.urgency === 'Emergency' ? 'Call the customer now and dispatch the on-call tech.'\n    : dup.length ? `Do not create a second ticket: add this email to ${dup[0].split(' ')[0]} and reject.`\n    : recall.length ? `Book as a recall on ${recall[0].split(' ')[0]} with the same tech, no new trip charge.`\n    : t.checks_failed ? 'Fix the failed fields (reply to the sender if needed), then create the ticket.' : '';\n  const ticket_id = route === 'create' ? 'SH-' + (nextNo++) : '';\n  const action = route === 'create'\n    ? (t.shadow ? `WOULD create ticket ${ticket_id}` : `Created ticket ${ticket_id}`)\n    : (t.shadow ? `WOULD send to a person: ${reasons[0]}` : `Sent to a person: ${reasons[0]}`);\n  return { json: { ...t, rules: undefined, duplicate_of: dup.join('; '), recall_of: recall.join('; '), route,\n    reasons: reasons.join(' | '), next_step, ticket_id, action, logged_at: new Date().toISOString() } };\n});"
+      }
+    },
+    {
+      "id": "8ed543a7-ef07-5598-bdeb-3ef5c8ae5d55",
+      "name": "Shadow mode?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "3d325ad9-e241-596e-8577-4263b8ea3585",
+              "leftValue": "={{ $json.shadow }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2f3f5476-beef-586e-9f9e-a480db5d7282",
+      "name": "Log: would-action",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1800,
+        140
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE",
+          "name": "Google Sheets account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "234df844-a7a3-5340-a9f9-d8b32fb6f448",
+      "name": "Log: action",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1800,
+        320
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Log"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE",
+          "name": "Google Sheets account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "21dfb5cb-868e-587d-a5e9-d65916937bd1",
+      "name": "Needs a person?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "68c26bb4-c4c3-53c1-bbd1-1b47e9def98d",
+              "leftValue": "={{ $json.route === 'person' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b3c9a875-6cce-50cb-a8bf-77bfd8f8ad7b",
+      "name": "Add to Needs a person",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2040,
+        420
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Needs a person"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE",
+          "name": "Google Sheets account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "ff163f46-016b-531c-8922-72f53124f397",
+      "name": "Slack: send to a person",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2260,
+        420
+      ],
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#office-intake"
+        },
+        "text": "={{ ':raising_hand: *Work order needs a person*\\n*Why:* ' + $('Needs a person?').item.json.reasons + '\\n*Suggested next step:* ' + $('Needs a person?').item.json.next_step + '\\n*Read:* ' + [$('Needs a person?').item.json.customer, $('Needs a person?').item.json.phone, $('Needs a person?').item.json.address, $('Needs a person?').item.json.zip, $('Needs a person?').item.json.claim, $('Needs a person?').item.json.trade].filter(Boolean).join(' · ') + '\\n*Problem:* ' + ($('Needs a person?').item.json.problem || '') + '\\n*Email:* ' + $('Needs a person?').item.json.subject + ' (from ' + $('Needs a person?').item.json.from + ')\\n```' + String($('Needs a person?').item.json.email_text).slice(0, 2500) + '```' }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE",
+          "name": "Slack account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "133d7a5c-f9bd-5e05-9976-0d530ff681e2",
+      "name": "Append ticket row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2040,
+        600
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "created_at": "={{ $json.logged_at }}",
+            "customer": "={{ $json.customer }}",
+            "phone": "={{ $json.phone }}",
+            "address": "={{ $json.address }}",
+            "zip": "={{ $json.zip }}",
+            "vendor_id": "={{ $json.vendor_id }}",
+            "claim": "={{ $json.claim || ($json.claim_to_follow ? 'to follow' : '') }}",
+            "trade": "={{ $json.trade }}",
+            "equipment": "={{ $json.equipment }}",
+            "problem": "={{ $json.problem }}",
+            "urgency": "={{ $json.urgency }}",
+            "source_email": "={{ $json.message_id }}"
+          }
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE",
+          "name": "Google Sheets account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build email text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build email text": {
+      "main": [
+        [
+          {
+            "node": "Claude: extract fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: extract fields": {
+      "main": [
+        [
+          {
+            "node": "Parse Claude reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extraction failed: to a person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Claude reply": {
+      "main": [
+        [
+          {
+            "node": "Validate fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate fields": {
+      "main": [
+        [
+          {
+            "node": "Load jobs sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load jobs sheet": {
+      "main": [
+        [
+          {
+            "node": "Duplicate & recall check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate & recall check": {
+      "main": [
+        [
+          {
+            "node": "Shadow mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraction failed: to a person": {
+      "main": [
+        [
+          {
+            "node": "Shadow mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shadow mode?": {
+      "main": [
+        [
+          {
+            "node": "Log: would-action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: action",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Needs a person?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs a person?": {
+      "main": [
+        [
+          {
+            "node": "Add to Needs a person",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append ticket row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Needs a person": {
+      "main": [
+        [
+          {
+            "node": "Slack: send to a person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_ID_OF_M1_ERROR_ALERT_WORKFLOW",
+    "timezone": "America/Denver"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
