@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case study · Ted Kelly</title>
+<meta name="description" content="How a field-service warranty and repair operation runs on automation: what was built, how it was switched on safely, and the numbers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://tedkelly.dev/case-study/">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><span class="dot" aria-hidden="true"></span>Ted Kelly</a>
+    <nav aria-label="Main">
+      <a href="/#build">What I build</a>
+      <a href="/case-study/">Case study</a>
+      <a href="/safety/">Safety method</a>
+      <a class="btn small" href="/work-with-me/">Work with me</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="page-hero wrap">
+    <p class="eyebrow mono">Case study · field service operation</p>
+    <h1>Running a warranty and repair operation on automation</h1>
+    <p class="lead">A real field-service business, unnamed here to protect its customers and partners. The figures come from the owner's own records.</p>
+  </section>
+
+  <section class="wrap prose" style="padding-bottom:72px">
+    <div class="num-grid">
+      <div><b>100–200</b><span>tickets a month</span></div>
+      <div><b>30–40</b><span>independent technicians</span></div>
+      <div><b>15–20</b><span>vendor accounts sending work</span></div>
+    </div>
+
+    <h2>The problem</h2>
+    <p>Work arrives from warranty companies and vendors as emails, each in its own format. Every one had to be read, retyped into the ticket system, assigned to an independent technician, and tracked until the first call, the visit and the completion report were done. Each vendor sets its own first-contact deadline and wants its own status updates.</p>
+    <p>The work was spread across email, spreadsheets and a growing pile of Zapier automations. The Zapier bill kept creeping up, and when an automation failed, nobody found out until a vendor asked where their report was.</p>
+
+    <h2>What was built</h2>
+    <ul>
+      <li><strong>A ticket system in AppSheet</strong>, later rebuilt on the AppSheet API so other tools can create and update tickets automatically.</li>
+      <li><strong>AI email intake</strong>: each work-order email is read by AI, turned into a ticket and checked field by field. Anything unclear goes to a person.</li>
+      <li><strong>A morning digest</strong>: every day a script checks every open job and lists what needs attention, such as new work not yet logged, jobs with no technician, overdue first calls and reports not sent.</li>
+      <li><strong>Vendor update tracking</strong>: a daily feed of reports that haven't gone out yet, before the vendor has to chase them.</li>
+      <li><strong>Zapier work moved to scripts</strong>: the busiest Zapier automations were rebuilt as scripts that cost nothing per run.</li>
+    </ul>
+
+    <h2>How it was switched on safely</h2>
+    <p>Every change followed the <a href="/safety/">safety method</a>: shadow mode first, one install a day, every install checked against an export, a rollback copy of every version, an independent AI review, and anything unclear handed to a person. The business kept running normally the whole time.</p>
+
+    <h2>The numbers</h2>
+    <table class="data-table">
+      <thead><tr><th>Measure</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Zapier tasks per month</td><td>Cut to under 5,000, with 2,000 as the next target</td></tr>
+        <tr><td>Zapier plan</td><td>Dropped one tier, saving about $60 a month</td></tr>
+        <tr><td>AI cost to read each email</td><td>About one cent</td></tr>
+        <tr><td>Monthly volume handled</td><td>100–200 tickets across 15–20 vendor accounts</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What it costs to run</h2>
+    <p>At 100–200 emails a month and about a cent each, the AI reading costs roughly <strong>$1–2 a month</strong>. The scripts run on the business's existing Google Workspace at no extra cost. Zapier is kept only for the jobs it does best, on a smaller plan.</p>
+
+    <div class="callout">
+      <h3 style="margin-top:0">What this would look like in your business</h3>
+      <p>Most shops start with the piece that hurts most, usually email intake or the morning digest. I set up that one module in shadow mode, on the tools you already use, and show you it gets your real work right before anything is switched on. Then I keep it running and we add the next piece when you're ready.</p>
+      <p style="margin-top:10px"><a href="/work-with-me/">See how it works →</a></p>
+    </div>
+  </section>
+  <section class="band contact">
+    <div class="wrap">
+      <h2>See if it fits your business</h2>
+      <p class="section-lead">A free 20-minute call is enough to know whether I can help.</p>
+      <div class="cta-row"><a class="btn" href="mailto:ted@tedkelly.dev?subject=Free%2020-minute%20call">Email ted@tedkelly.dev</a></div>
+    </div>
+  </section>
+</main>
+<footer class="wrap footer">
+  <span>© 2026 Ted Kelly</span>
+  <span class="footer-links"><a href="/case-study/">Case study</a> · <a href="/safety/">Safety method</a> · <a href="/work-with-me/">Work with me</a> · <a href="/projects/">Demos</a></span>
+</footer>
+</body>
+</html>

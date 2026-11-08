@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety method · Ted Kelly</title>
+<meta name="description" content="The rules I follow on every automation build: shadow mode first, one change a day, rollback copies and fail to a person.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://tedkelly.dev/safety/">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><span class="dot" aria-hidden="true"></span>Ted Kelly</a>
+    <nav aria-label="Main">
+      <a href="/#build">What I build</a>
+      <a href="/case-study/">Case study</a>
+      <a href="/safety/">Safety method</a>
+      <a class="btn small" href="/work-with-me/">Work with me</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="page-hero wrap">
+    <p class="eyebrow mono">Safety method</p>
+    <h1>Automations that never drop your work silently</h1>
+    <p class="lead">An automation that breaks quietly is worse than no automation. These are the rules I follow on every build, for every client, written down so you can hold me to them.</p>
+  </section>
+
+  <section class="wrap prose" style="padding-bottom:72px">
+    <ol class="rule-list">
+      <li><b>Shadow mode first</b>A new automation starts by logging what it <em>would</em> do, without writing anything. You see it handle your real emails and jobs before it's allowed to touch them.</li>
+      <li><b>One install a day</b>Never two big changes on the same day. If something looks off tomorrow, we know exactly which change caused it.</li>
+      <li><b>Every install checked against an export</b>Before and after each change, I compare the results against an export of your data, so I can show the new version gets the same work right.</li>
+      <li><b>A rollback copy of every version</b>Every version of every automation is saved. If a change misbehaves, we go back to the last good one in minutes, not days.</li>
+      <li><b>An independent AI reviewer on every delivery</b>A separate AI review checks each change for mistakes and edge cases before it goes live, on top of my own testing.</li>
+      <li><b>Fail to a person</b>When something is unclear (a missing claim number, a possible duplicate, a payment that doesn't match), the automation stops and hands it to a person with full context. A script never drops work silently.</li>
+    </ol>
+
+    <h2>What that looks like day to day</h2>
+    <ul>
+      <li><strong>Every run is logged</strong>: what came in, what was decided, and what was done.</li>
+      <li><strong>Failures retry automatically</strong> with a growing wait between tries. If the retries run out, a person is alerted with the details and a suggested fix.</li>
+      <li><strong>Heartbeat checks</strong> catch an automation that silently stopped running.</li>
+      <li><strong>A morning digest</strong> shows you overdue jobs, items waiting on a person and the health of every automation, without logging in anywhere.</li>
+      <li><strong>Secrets stay secret.</strong> Passwords and keys live in protected settings, never in code or spreadsheets.</li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>See it working:</strong> the <a href="/projects/work-order-intake/">email intake demo</a> shows shadow mode, field checks and the hand-off to a person. The <a href="/projects/daily-digest/">health check demo</a> shows a failure, an automatic retry and the alert.</p>
+    </div>
+
+    <h2>Why it matters to you</h2>
+    <p>Your business runs on these jobs. A missed work order is a missed first call, a penalty from a warranty company, or an unhappy customer. The point of automation is fewer dropped balls, not new ones, so the method is built around never losing work and always knowing what happened.</p>
+  </section>
+  <section class="band contact">
+    <div class="wrap">
+      <h2>See if it fits your business</h2>
+      <p class="section-lead">A free 20-minute call is enough to know whether I can help.</p>
+      <div class="cta-row"><a class="btn" href="mailto:ted@tedkelly.dev?subject=Free%2020-minute%20call">Email ted@tedkelly.dev</a></div>
+    </div>
+  </section>
+</main>
+<footer class="wrap footer">
+  <span>© 2026 Ted Kelly</span>
+  <span class="footer-links"><a href="/case-study/">Case study</a> · <a href="/safety/">Safety method</a> · <a href="/work-with-me/">Work with me</a> · <a href="/projects/">Demos</a></span>
+</footer>
+</body>
+</html>
