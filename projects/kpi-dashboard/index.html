@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner's KPI Dashboard · Ted Kelly</title>
+<meta name="description" content="A one-page owner's dashboard for a service business: revenue, first-call speed, first-time fix rate, aging jobs and receivables, with a plain-English list of what needs attention.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/demo.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="demo-bar"><a href="/">← Ted Kelly</a><span class="pill">DEMO</span><span>Fictional company & data</span><span class="spacer"></span><a href="https://github.com/TedKelly561/TedKelly/tree/main/projects/kpi-dashboard">View code</a></div>
+
+<header class="app-head dash-head">
+  <div>
+    <div class="co">Summit Home Services</div>
+    <h1>Owner's dashboard</h1>
+    <p>The handful of numbers that decide whether the week was good: money in, speed to the customer, work done right the first time, and what is slipping.</p>
+  </div>
+  <div class="head-controls">
+    <div class="seg" role="radiogroup" aria-label="Time period" id="period">
+      <button type="button" role="radio" data-days="7">Last 7 days</button>
+      <button type="button" role="radio" data-days="30">30 days</button>
+      <button type="button" role="radio" data-days="90">90 days</button>
+    </div>
+    <div class="asof muted" id="asof"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section aria-label="Key numbers" class="tiles" id="tiles"></section>
+
+  <div class="dash-grid">
+    <section class="card attn span-7" aria-labelledby="attn-h">
+      <div class="card-head">
+        <h2 id="attn-h">Needs your attention</h2>
+        <span class="chip" id="attn-count"></span>
+      </div>
+      <ol class="attn-list" id="attn"></ol>
+    </section>
+
+    <div class="span-5 stack">
+    <section class="card" aria-labelledby="pipe-h">
+      <div class="card-head">
+        <h2 id="pipe-h">Open jobs by stage</h2>
+        <span class="chip">Right now</span>
+      </div>
+      <p class="sub" id="pipe-sub"></p>
+      <div id="pipeline" class="chart"></div>
+    </section>
+
+    <section class="card" aria-labelledby="ar-h">
+      <div class="card-head">
+        <h2 id="ar-h">Money owed to you</h2>
+        <span class="chip">Right now</span>
+      </div>
+      <p class="sub" id="ar-sub"></p>
+      <div class="legend" id="ar-legend"></div>
+      <div id="ar" class="chart"></div>
+      <details class="tbl-view"><summary>Show as table</summary><div id="ar-table"></div></details>
+    </section>
+    </div>
+
+    <section class="card span-7" aria-labelledby="trade-h">
+      <div class="card-head">
+        <h2 id="trade-h">Revenue by trade</h2>
+        <span class="chip" id="trade-chip"></span>
+      </div>
+      <p class="sub" id="trade-sub"></p>
+      <div class="legend" id="trade-legend"></div>
+      <div id="trade" class="chart"></div>
+      <details class="tbl-view"><summary>Show as table</summary><div id="trade-table"></div></details>
+    </section>
+
+    <section class="card span-5" aria-labelledby="tech-h">
+      <div class="card-head">
+        <h2 id="tech-h">Revenue per tech</h2>
+        <span class="chip" id="tech-chip"></span>
+      </div>
+      <p class="sub">Completed jobs in the period. Avg ticket = revenue ÷ jobs.</p>
+      <div id="techbars" class="chart"></div>
+    </section>
+
+    <section class="card span-12" aria-labelledby="fc-h">
+      <div class="card-head">
+        <h2 id="fc-h">Time to first call vs. target</h2>
+        <span class="chip" id="fc-chip"></span>
+      </div>
+      <p class="sub">Hours from the work order arriving to the first call with the customer. The line is each sender's deadline.</p>
+      <div class="legend" id="fc-legend"></div>
+      <div id="firstcall" class="fc-grid"></div>
+    </section>
+
+    
+
+    <section class="card span-12" aria-labelledby="lb-h">
+      <div class="card-head">
+        <h2 id="lb-h">Tech leaderboard</h2>
+        <span class="chip" id="lb-chip"></span>
+      </div>
+      <div class="table-scroll" tabindex="0" aria-label="Tech leaderboard table, scrolls sideways"><table class="lb" id="leaderboard"></table></div>
+      <p class="scroll-hint">Swipe the table sideways for ticket, first-call and callback columns →</p>
+    </section>
+  </div>
+</main>
+
+<footer class="demo-foot">
+  Summit Home Services is a fictional company. Open jobs come from the shared demo data; the older job history
+  (about 26 weeks) is simulated with a fixed random seed so trends have something to show, and payment dates are simulated from each
+  sender's pay terms. Every number on this page is computed in your browser from that one job list.
+</footer>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script src="../shared/data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
