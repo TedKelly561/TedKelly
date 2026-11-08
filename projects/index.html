@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Business Toolkit · Ted Kelly</title>
+<meta name="description" content="Working demos of the tools a service business runs on: intake, quoting, dispatch and owner dashboards. Built by Ted Kelly.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/demo.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+  .tool { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; transition: transform .12s ease, border-color .12s ease; }
+  .tool:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .tool .step { font-family: var(--mono); font-size: .72rem; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
+  .tool h2 { font-size: 1.2rem; }
+  .tool p { color: var(--ink-soft); font-size: .95rem; flex: 1; }
+  .tool .go { font-weight: 600; color: var(--accent); }
+  .story { margin: 28px 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: var(--mono); font-size: .8rem; color: var(--ink-soft); }
+  .story b { color: var(--ink); font-weight: 500; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+  .story b.on { border-color: var(--accent); color: var(--accent); }
+  .about { margin-top: 28px; }
+  .about h2 { margin-bottom: 10px; }
+  .about p + p { margin-top: 10px; }
+  @media (max-width: 900px) { .flow { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .flow { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="demo-bar"><a href="/">← Ted Kelly</a><span class="pill">DEMOS</span><span>Fictional company &amp; data</span><span class="spacer"></span><a href="https://github.com/TedKelly561/TedKelly/tree/main/projects">View code</a></div>
+
+<header class="app-head">
+  <div class="co">Service Business Toolkit</div>
+  <h1>A day in the life of a service business, one tool at a time</h1>
+  <p>
+    Every demo below runs on the same fictional company, <b>Summit Home Services</b> (HVAC, plumbing and
+    appliance repair), with the same customers, technicians and jobs. Click through them in order and you'll
+    follow a job from the first email to the owner's numbers.
+  </p>
+</header>
+
+<main class="wrap">
+  <div class="story" aria-label="Job lifecycle">
+    <b class="on">Intake</b>→<b class="on">Quote</b>→<b class="on">Dispatch</b>→<b>Field work</b>→<b>Invoice</b>→<b>Review</b>→<b class="on">Dashboard</b>
+  </div>
+
+  <div class="flow">
+    <a class="card tool" href="work-order-intake/">
+      <span class="step">Step 1 · Intake</span>
+      <h2>Work Order Intake</h2>
+      <p>Paste a messy warranty or customer email and get a clean ticket: customer, address, claim number, urgency, deadline, suggested tech and a first-contact text.</p>
+      <span class="go">Open demo →</span>
+    </a>
+    <a class="card tool" href="quote-builder/">
+      <span class="step">Step 2 · Quote</span>
+      <h2>Quote Builder</h2>
+      <p>Build a professional quote from a price book in a minute. The owner sees margin; the customer gets a clean quote and an approve link.</p>
+      <span class="go">Open demo →</span>
+    </a>
+    <a class="card tool" href="dispatch-board/">
+      <span class="step">Step 3 · Dispatch</span>
+      <h2>Dispatch Board</h2>
+      <p>The whole day on one screen. Drag jobs onto technicians, and see overdue first calls before the warranty company does.</p>
+      <span class="go">Open demo →</span>
+    </a>
+    <a class="card tool" href="kpi-dashboard/">
+      <span class="step">Step 4 · Numbers</span>
+      <h2>Owner's Dashboard</h2>
+      <p>Revenue per tech, time to first call, callbacks and who owes you money, plus a plain-English list of what needs your attention.</p>
+      <span class="go">Open demo →</span>
+    </a>
+  </div>
+
+  <section class="card about">
+    <h2>Why these, and why like this?</h2>
+    <p>
+      I run a service business, and these are the problems I see every day: work orders retyped from email,
+      quotes that forget the trip charge, jobs nobody called back, and owners flying blind. Each demo shows one
+      fix, built the way I'd build it for a real shop: simple to use, safe with your data, and working on a phone.
+    </p>
+    <p class="muted">
+      All companies, people, addresses and claim numbers are fictional. Want something like this for your
+      business? <a href="/#contact">Get in touch</a>.
+    </p>
+  </section>
+</main>
+
+<footer class="demo-foot">© Ted Kelly · <a href="/">tedkelly.dev</a></footer>
+</body>
+</html>

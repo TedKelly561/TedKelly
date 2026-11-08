@@ -154,3 +154,17 @@ h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin-bottom: 10px; }
   .project h3 { padding-right: 0; }
   .section, .band { padding-top: 56px; padding-bottom: 56px; }
 }
+
+/* Toolkit card */
+.toolkit { padding: 28px; }
+.toolkit-head { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; }
+.toolkit-head h3 { font-size: 1.4rem; margin-bottom: 8px; }
+.toolkit-head p { color: var(--ink-soft); max-width: 60ch; }
+.toolkit-head .btn { white-space: nowrap; }
+.toolkit-steps { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 22px; }
+.toolkit-steps a { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); text-decoration: none; height: 100%; transition: border-color .12s ease, transform .12s ease; }
+.toolkit-steps a:hover { border-color: var(--accent); transform: translateY(-1px); }
+.toolkit-steps span { grid-row: span 2; color: var(--accent); font-size: .8rem; padding-top: 3px; }
+.toolkit-steps small { color: var(--ink-soft); font-size: .85rem; }
+@media (max-width: 900px) { .toolkit-steps { grid-template-columns: repeat(2, 1fr); } .toolkit-head { flex-direction: column; } }
+@media (max-width: 640px) { .toolkit { padding: 22px; } .toolkit-steps { grid-template-columns: 1fr; } }
