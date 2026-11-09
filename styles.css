@@ -257,3 +257,8 @@ a.module:hover { border-color: var(--accent); transform: translateY(-2px); }
 .prose ul.tags { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 0; }
 .prose ul.tags li { font-size: .78rem; }
 .role-grid .card h3 { margin-top: 0; }
+.skill-wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: center; border-color: rgba(255,138,31,.45); box-shadow: inset 0 0 0 1px rgba(255,138,31,.12); }
+.skill-wide .eyebrow { color: var(--amber); margin-bottom: 6px; }
+.skill-wide strong { color: var(--ink); }
+.skill-wide .tags { margin-top: 0; }
+@media (max-width: 900px) { .skill-wide { grid-template-columns: 1fr; } }
