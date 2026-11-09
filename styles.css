@@ -242,3 +242,18 @@ a.module:hover { border-color: var(--accent); transform: translateY(-2px); }
   .brand .wm small { display: none; }
   .hero-logo { margin-bottom: 20px; }
 }
+
+/* Skills */
+.skill h3 { font-size: 1.15rem; margin-bottom: 8px; }
+.skill p { color: var(--ink-soft); }
+.skill .proof { font-size: .9rem; margin-top: 10px; color: var(--ink-soft); }
+.skill .proof a { color: var(--accent); }
+
+/* Hire page */
+.role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 18px 0; }
+.role-grid .card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.role-grid .card p { color: var(--ink-soft); font-size: .98rem; }
+@media (max-width: 640px) { .role-grid { grid-template-columns: 1fr; } }
+.prose ul.tags { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 0; }
+.prose ul.tags li { font-size: .78rem; }
+.role-grid .card h3 { margin-top: 0; }
