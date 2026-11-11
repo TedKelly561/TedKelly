@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Savings calculator · Ted Kelly</title>
+<meta name="description" content="Put in your own numbers and see a conservative estimate of the office hours and money automation could save your service business each month.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/savings/app.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://tedkelly.dev/savings/">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><img src="/assets/tk-chip.svg" alt="" width="36" height="36"><span class="wm"><b>TED KELLY</b><small>BUSINESS SYSTEM SOLUTIONS</small></span></a>
+    <nav aria-label="Main">
+      <a href="/#build">What I build</a>
+      <a href="/#skills">Skills</a>
+      <a href="/case-study/">Case study</a>
+      <a href="/hire/">Hire me</a>
+      <a class="btn small" href="/work-with-me/">Work with me</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="page-hero wrap">
+    <p class="eyebrow mono">Savings calculator · estimate</p>
+    <h1>What would automation save your business?</h1>
+    <p class="lead">Put in your own numbers. You'll get a conservative estimate of the office hours and money each module could give back every month. Nothing is sent anywhere unless you choose to email it.</p>
+  </section>
+
+  <section class="wrap calc" aria-label="Savings calculator">
+    <form class="inputs" id="calc-form" novalidate>
+      <h2 class="col-title">Your numbers</h2>
+      <p class="col-intro">Rough guesses are fine. Defaults are a typical small shop doing about 150 jobs a month.</p>
+        <fieldset class="card fs">
+          <legend class="mono">M1 · Email intake</legend>
+          <p class="fs-intro">Work orders that arrive by email and get retyped into your system.</p>
+          <div class="field" data-field="jobs">
+            <label id="jobs-label" for="jobs">Work orders / jobs per month</label>
+            <div class="field-row"><input type="range" id="jobs-range" aria-labelledby="jobs-label" tabindex="0"><span class="numbox"><input id="jobs" type="number" inputmode="decimal"></span></div>
+          </div>
+          <div class="field" data-field="retypeMin">
+            <label id="retypeMin-label" for="retypeMin">Minutes retyping each emailed work order</label>
+            <div class="field-row"><input type="range" id="retypeMin-range" aria-labelledby="retypeMin-label" tabindex="0"><span class="numbox"><input id="retypeMin" type="number" inputmode="decimal"><span class="unit" aria-hidden="true">min</span></span></div>
+          </div>
+        </fieldset>
+        <fieldset class="card fs">
+          <legend class="mono">M3 · Status updates</legend>
+          <p class="fs-intro">Customers and vendors asking where their job is.</p>
+          <div class="field" data-field="statusPerWeek">
+            <label id="statusPerWeek-label" for="statusPerWeek">"Where's my tech?" calls &amp; emails per week</label>
+            <div class="field-row"><input type="range" id="statusPerWeek-range" aria-labelledby="statusPerWeek-label" tabindex="0"><span class="numbox"><input id="statusPerWeek" type="number" inputmode="decimal"></span></div>
+          </div>
+          <div class="field" data-field="statusMin">
+            <label id="statusMin-label" for="statusMin">Minutes each one takes to answer</label>
+            <div class="field-row"><input type="range" id="statusMin-range" aria-labelledby="statusMin-label" tabindex="0"><span class="numbox"><input id="statusMin" type="number" inputmode="decimal"><span class="unit" aria-hidden="true">min</span></span></div>
+          </div>
+        </fieldset>
+        <fieldset class="card fs">
+          <legend class="mono">M4 · Contractor payments</legend>
+          <p class="fs-intro">Checking each tech or contractor payment against the jobs it covers.</p>
+          <div class="field" data-field="payments">
+            <label id="payments-label" for="payments">Contractor or tech payments per month</label>
+            <div class="field-row"><input type="range" id="payments-range" aria-labelledby="payments-label" tabindex="0"><span class="numbox"><input id="payments" type="number" inputmode="decimal"></span></div>
+          </div>
+          <div class="field" data-field="payMin">
+            <label id="payMin-label" for="payMin">Minutes to check each payment</label>
+            <div class="field-row"><input type="range" id="payMin-range" aria-labelledby="payMin-label" tabindex="0"><span class="numbox"><input id="payMin" type="number" inputmode="decimal"><span class="unit" aria-hidden="true">min</span></span></div>
+          </div>
+          <div class="field" data-field="mistakes">
+            <label id="mistakes-label" for="mistakes">Payment mistakes per year</label>
+            <p class="hint" id="mistakes-hint">Paid twice, wrong amount, never marked paid.</p>
+            <div class="field-row"><input type="range" id="mistakes-range" aria-labelledby="mistakes-label" tabindex="0"><span class="numbox"><input id="mistakes" type="number" inputmode="decimal" aria-describedby="mistakes-hint"></span></div>
+          </div>
+          <div class="field" data-field="mistakeCost">
+            <label id="mistakeCost-label" for="mistakeCost">Average cost of one mistake</label>
+            <p class="hint" id="mistakeCost-hint">Money lost plus time to sort it out.</p>
+            <div class="field-row"><input type="range" id="mistakeCost-range" aria-labelledby="mistakeCost-label" tabindex="0"><span class="numbox pre"><span class="unit" aria-hidden="true">$</span><input id="mistakeCost" type="number" inputmode="decimal" aria-describedby="mistakeCost-hint"></span></div>
+          </div>
+        </fieldset>
+        <fieldset class="card fs">
+          <legend class="mono">M5 · Automation bill</legend>
+          <div class="field" data-field="zapier">
+            <label id="zapier-label" for="zapier">Current Zapier (or similar) bill per month</label>
+            <p class="hint" id="zapier-hint">Put 0 if you don't use one.</p>
+            <div class="field-row"><input type="range" id="zapier-range" aria-labelledby="zapier-label" tabindex="0"><span class="numbox pre"><span class="unit" aria-hidden="true">$</span><input id="zapier" type="number" inputmode="decimal" aria-describedby="zapier-hint"></span></div>
+          </div>
+        </fieldset>
+        <fieldset class="card fs">
+          <legend class="mono">Your labor cost</legend>
+          <div class="field" data-field="rate">
+            <label id="rate-label" for="rate">Office labor cost per hour</label>
+            <p class="hint" id="rate-hint">Loaded cost of office staff — your number. Wages plus taxes and overhead.</p>
+            <div class="field-row"><input type="range" id="rate-range" aria-labelledby="rate-label" tabindex="0"><span class="numbox"><input id="rate" type="number" inputmode="decimal" aria-describedby="rate-hint"><span class="unit" aria-hidden="true">$/hr</span></span></div>
+          </div>
+        </fieldset>      <button type="button" class="btn ghost small" id="reset">Reset to defaults</button>
+    </form>
+
+    <aside class="total-col" aria-labelledby="total-title">
+      <div class="card total" id="total">
+        <p class="eyebrow mono" id="total-title">Estimated savings</p>
+        <div class="total-nums">
+          <div><b id="t-hours">0</b><span>office hours a month</span></div>
+          <div><b id="t-year" class="hl">$0</b><span>a year <small>(<span id="t-month">$0</span> a month)</span></span></div>
+        </div>
+        <p class="sr-only" id="t-live" aria-live="polite" aria-atomic="true"></p>
+        <p class="total-note">Estimate only, using conservative assumptions. Ted quotes a fixed price for the first build after a free call.</p>
+        <div class="total-ctas">
+          <a class="btn" id="cta-mail" href="mailto:ted@tedkelly.dev?subject=Savings%20estimate%20%E2%80%94%20free%20call">Book a free 20-minute call</a>
+          <button type="button" class="btn ghost" id="share">Share my numbers</button>
+        </div>
+        <p class="share-status" id="share-status" role="status"></p>
+        <label class="sr-only" for="share-url">Link to these numbers</label>
+        <input class="share-url" id="share-url" type="text" readonly hidden>
+      </div>
+    </aside>
+  </section>
+
+  <a class="mini-total" id="mini-total" href="#total" aria-hidden="true" tabindex="-1"><span>Estimate</span> <b id="mini-hours">0</b> h/month · <b id="mini-year" class="hl">$0</b>/year</a>
+
+  <section class="wrap results" aria-labelledby="by-module">
+    <h2 id="by-module">By module</h2>
+    <p class="section-lead">Each card shows how the estimate was worked out. All figures are estimates; the before-and-after times come from the working demos and are typical, not measured in your business.</p>
+    <div class="mod-grid" id="mod-grid">
+      <noscript><p class="card">The calculator needs JavaScript to work out the numbers.</p></noscript>
+    </div>
+  </section>
+
+  <section class="wrap prose assumptions" aria-labelledby="assume-title">
+    <h2 id="assume-title">Assumptions</h2>
+    <p>Estimates only; your real numbers are measured in <a href="/safety/">shadow mode</a> before anything goes live. Every reduction below is set lower than the demos show, on purpose.</p>
+    <ul>
+      <li><strong>M1 email intake:</strong> retyping drops to about 30 seconds of review per order, as in the <a href="/projects/work-order-intake/">M1 demo</a> (from ~5 minutes). Only 80% of orders are counted, in case some still need a person.</li>
+      <li><strong>M3 status updates:</strong> half of "where's my tech?" calls and emails go away. In the <a href="/projects/thread-updates/">M3 demo thread</a>, follow-ups went from 4 to 0; that's illustrative.</li>
+      <li><strong>M4 payment proofing:</strong> 75% of checking time is saved and half of payment mistakes are caught. The <a href="/projects/payment-proofing/">M4 demo</a> shows 2 hours per pay run cut to 5 minutes of exceptions, for an illustrative 5-tech shop.</li>
+      <li><strong>M5 Zapier bill:</strong> 40% of the bill moves to scripts that cost nothing per run. In the <a href="/case-study/">case study</a> the business dropped one Zapier plan tier, about $60 a month.</li>
+      <li><strong>M2 health check:</strong> no dollar figure. It reduces the risk of an automation failing quietly; it doesn't remove a task.</li>
+      <li>A month is 4.33 weeks. Hours are multiplied by your labor cost per hour. Running costs (about a cent of AI per email, a small server if needed) and the build itself are not subtracted.</li>
+    </ul>
+  </section>
+
+  <section class="band contact">
+    <div class="wrap">
+      <h2>See if it fits your business</h2>
+      <p class="section-lead">A free 20-minute call is enough to know whether I can help, and which module I'd start with.</p>
+      <div class="cta-row"><a class="btn" id="cta-mail-2" href="mailto:ted@tedkelly.dev?subject=Savings%20estimate%20%E2%80%94%20free%20call">Book a free 20-minute call</a></div>
+    </div>
+  </section>
+</main>
+<footer class="wrap footer">
+  <span>© 2026 Ted Kelly</span>
+  <span class="footer-links"><a href="/case-study/">Case study</a> · <a href="/safety/">Safety method</a> · <a href="/work-with-me/">Work with me</a> · <a href="/savings/">Savings calculator</a> · <a href="/hire/">Hire me</a> · <a href="/projects/">Demos</a></span>
+</footer>
+<script src="/savings/calc.js"></script>
+<script src="/savings/app.js"></script>
+</body>
+</html>
