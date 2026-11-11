@@ -94,3 +94,8 @@ button.btn { font: inherit; font-weight: 600; cursor: pointer; }
   .total-ctas .btn { flex: 1 1 100%; }
   .numbox { width: 7.6em; }
 }
+
+/* Keep the assistant button above the mobile total bar */
+@media (max-width: 900px) {
+  body:has(.mini-total.show) .tka-launch { bottom: 70px; }
+}

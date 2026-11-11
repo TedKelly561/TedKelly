@@ -25,6 +25,7 @@ const PAGES = [
   { file: 'safety/index.html', url: `${SITE}/safety/`, title: 'Safety method' },
   { file: 'case-study/index.html', url: `${SITE}/case-study/`, title: 'Case study (M5: moving off a growing Zapier bill)' },
   { file: 'hire/index.html', url: `${SITE}/hire/`, title: 'Hire me (for employers: roles Ted is open to, experience, tools)' },
+  { file: 'savings/index.html', url: `${SITE}/savings/`, title: 'Savings calculator (visitor enters their own numbers; conservative estimate, no prices)' },
 ];
 
 const READMES = [
