@@ -622,7 +622,12 @@
       else if (a === 'pick') startPlacing(j.id);
       else if (a === 'assign') {
         const f = formValues();
-        if (!f) { $('#drTech').focus(); $('#drWarns').innerHTML = '<span class="flag bad">Choose a tech first</span>'; return; }
+        if (!f) {
+          const noTech = !$('#drTech').value;
+          $(noTech ? '#drTech' : '#drDay').focus();
+          $('#drWarns').innerHTML = `<span class="flag bad">${noTech ? 'Choose a tech first' : 'Choose a day first'}</span>`;
+          return;
+        }
         place(j.id, f.techId, f.start);
       }
     }
