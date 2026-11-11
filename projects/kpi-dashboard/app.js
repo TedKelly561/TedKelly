@@ -11,6 +11,8 @@
   const DAY = 86400000, HOUR = 3600000;
   const TODAY = new Date(S.today).getTime();          // local midnight today
   const NOW = TODAY + 12 * HOUR;                        // "as of" time: today, noon
+  // Local midnight n calendar days from today (n * DAY drifts an hour across DST changes).
+  const dayAt = n => { const x = new Date(TODAY); x.setDate(x.getDate() + n); return x.getTime(); };
   const ts = s => (s ? new Date(s).getTime() : null);
   const vendorById = Object.fromEntries(S.vendors.map(v => [v.id, v]));
   const techById = Object.fromEntries(S.techs.map(t => [t.id, t]));
@@ -73,7 +75,7 @@
   const volAcc = { HVAC: rnd(), Plumbing: rnd(), Appliance: rnd() };
   const cbAcc = Object.fromEntries(S.techs.map(t => [t.id, rnd()]));
   for (let d = -HIST_DAYS; d <= -1; d++) {
-    const dayT = TODAY + d * DAY;
+    const dayT = dayAt(d);
     const base = DOW_BASE[new Date(dayT).getDay()] * (d >= -34 ? 0.8 : 1); // real jobs fill the rest of the last 5 weeks
     const lambdas = { HVAC: base * 0.33 * (1 + seasonBoost(d)), Plumbing: base * 0.25, Appliance: base * 0.34 };
     for (const trade of TRADES) {
@@ -244,11 +246,11 @@
   try { const saved = Number(localStorage.getItem('kpi-period')); if ([7, 30, 90].includes(saved)) DAYS = saved; } catch (e) { /* storage blocked */ }
   if (/^#(7|30|90)d$/.test(location.hash)) DAYS = Number(location.hash.slice(1, -1));
 
-  const periodBounds = n => ({ a: TODAY - n * DAY, b: TODAY, pa: TODAY - 2 * n * DAY, pb: TODAY - n * DAY });
+  const periodBounds = n => ({ a: dayAt(-n), b: TODAY, pa: dayAt(-2 * n), pb: dayAt(-n) });
 
   // ---------- KPI tiles ----------
   const WEEKS = 13;
-  const weekBuckets = Array.from({ length: WEEKS }, (_, k) => ({ a: TODAY - 7 * (WEEKS - k) * DAY, b: TODAY - 7 * (WEEKS - 1 - k) * DAY }));
+  const weekBuckets = Array.from({ length: WEEKS }, (_, k) => ({ a: dayAt(-7 * (WEEKS - k)), b: dayAt(-7 * (WEEKS - 1 - k)) }));
   const weekly = weekBuckets.map(w => metrics(w.a, w.b));
   const weeklyAged = weekBuckets.map((w, k) => agedOpen(k === WEEKS - 1 ? NOW : w.b).length);
 
@@ -258,8 +260,8 @@
     const min = Math.min(...values), max = Math.max(...values), span = max - min || 1;
     const X = i => 2 + (i / (values.length - 1)) * (w - 6);
     const Y = v => 3 + (1 - (v - min) / span) * (hh - 8);
-    const t0 = TODAY - WEEKS * 7 * DAY, tSpan = WEEKS * 7 * DAY;
-    const shadeX = 2 + Math.max(0, (TODAY - DAYS * DAY - t0) / tSpan) * (w - 6);
+    const t0 = dayAt(-WEEKS * 7), tSpan = TODAY - t0;
+    const shadeX = 2 + Math.max(0, (dayAt(-DAYS) - t0) / tSpan) * (w - 6);
     svgEl('rect', { x: shadeX, y: 0, width: w - shadeX, height: hh, fill: 'var(--accent-soft)', opacity: 0.55, rx: 3 }, svg);
     const d = values.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('');
     svgEl('path', { d: d + `L${X(values.length - 1)},${hh}L${X(0)},${hh}Z`, fill: 'var(--accent)', opacity: 0.08 }, svg);
@@ -315,10 +317,10 @@
 
   // ---------- Revenue by trade (stacked columns) ----------
   function tradeBuckets(n) {
-    const { a, b } = periodBounds(n);
-    if (n <= 30) return Array.from({ length: n }, (_, i) => ({ a: a + i * DAY, b: a + (i + 1) * DAY, label: fmtDate(a + i * DAY), daily: true }));
+    const { a } = periodBounds(n);
+    if (n <= 30) return Array.from({ length: n }, (_, i) => ({ a: dayAt(i - n), b: dayAt(i - n + 1), label: fmtDate(dayAt(i - n)), daily: true }));
     const out = [];
-    for (let end = b; end > a; end -= 7 * DAY) out.unshift({ a: Math.max(a, end - 7 * DAY), b: end });
+    for (let w = 0; dayAt(-7 * w) > a; w++) out.unshift({ a: Math.max(a, dayAt(-7 * (w + 1))), b: dayAt(-7 * w) });
     out.forEach(k => { k.label = fmtDate(k.a); k.days = Math.round((k.b - k.a) / DAY); });
     return out;
   }
@@ -603,7 +605,7 @@
       return null;
     }
     // Callback rates need a decent sample to be fair to a tech, so judge on at least 90 days.
-    const cbo = DAYS >= 90 ? cbOutlier(cur, `the last ${DAYS} days`) : cbOutlier(metrics(TODAY - 90 * DAY, TODAY), 'the last 90 days');
+    const cbo = DAYS >= 90 ? cbOutlier(cur, `the last ${DAYS} days`) : cbOutlier(metrics(dayAt(-90), TODAY), 'the last 90 days');
     if (cbo) {
       const { s, restRate } = cbo, ratio = s.cbRate / (restRate || 0.01);
       const lastCb = s.cbJobs.slice().sort((a, b) => b.completed - a.completed).slice(0, 3);
@@ -688,7 +690,7 @@
       btn.setAttribute('aria-checked', on); btn.tabIndex = on ? 0 : -1;
     });
     $('asof').textContent = `${fmtDate(a)} – ${fmtDate(b - DAY)} · as of today ${new Date(NOW).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    renderTiles(cur, prev, agedOpen(NOW).length, agedOpen(NOW - DAYS * DAY).length);
+    renderTiles(cur, prev, agedOpen(NOW).length, agedOpen(dayAt(-DAYS) + 12 * HOUR).length);
     renderTrade(cur, prev);
     const stats = techStats(cur);
     renderTechBars(stats);
