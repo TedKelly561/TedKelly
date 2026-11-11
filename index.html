@@ -263,9 +263,10 @@
         </article>
         <article class="card project">
           <h3>Ted's website assistant</h3>
-          <p class="sub">AI chat for this site · launching soon</p>
+          <p class="sub">AI chat for this site · live now, bottom-right corner</p>
           <p>An assistant that answers owners' questions from this site's content and hands off to a free call. Runs on Cloudflare Workers with Claude, rate-limited and with no visitor data stored.</p>
           <ul class="tags"><li>Cloudflare Workers</li><li>TypeScript</li><li>Claude API</li></ul>
+          <a class="link" href="https://github.com/TedKelly561/TedKelly/tree/main/assistant-worker">View code →</a>
         </article>
         <article class="card project">
           <h3>Service Business Toolkit</h3>
@@ -330,5 +331,6 @@
 </footer>
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script src="/assets/assistant.js" data-endpoint="https://tedkelly-assistant.tseay11.workers.dev/chat" defer></script>
 </body>
 </html>

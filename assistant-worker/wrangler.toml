@@ -1,0 +1,21 @@
+# Cloudflare Worker for the "Ask Ted's assistant" chat on tedkelly.dev.
+# The ANTHROPIC_API_KEY is a Worker *secret* set in the dashboard or with
+# `npx wrangler secret put ANTHROPIC_API_KEY`. Never put it in this file.
+name = "tedkelly-assistant"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+# Per-IP rate limit (Workers Rate Limiting binding). 10 chat requests per
+# 60 seconds per IP. `namespace_id` is any positive integer you choose, unique
+# within the account. If this binding is missing, the Worker falls back to a
+# per-isolate in-memory limiter (see README).
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "4101"
+simple = { limit = 10, period = 60 }
+
+[observability]
+enabled = true

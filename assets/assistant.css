@@ -1,0 +1,177 @@
+/* "Ask Ted's assistant" chat widget. Loaded by /assets/assistant.js. All classes are prefixed tka-. */
+.tka-root {
+  --tka-bg: #050f14;
+  --tka-panel: #071820;
+  --tka-card: rgba(18, 44, 54, .78);
+  --tka-ink: #eaf2f5;
+  --tka-soft: #9fb6bf;
+  --tka-line: rgba(120, 190, 210, .2);
+  --tka-accent: #22d3ee;
+  --tka-accent-ink: #03141a;
+  --tka-accent-soft: rgba(34, 211, 238, .14);
+  --tka-orange: #ff8a1f;
+  --tka-orange-ink: #1a0a00;
+  --tka-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --tka-display: 'Space Grotesk', var(--tka-sans);
+  --tka-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-family: var(--tka-sans);
+  color: var(--tka-ink);
+  line-height: 1.5;
+  font-size: 15px;
+}
+.tka-root *, .tka-root *::before, .tka-root *::after { box-sizing: border-box; }
+.tka-root [hidden] { display: none !important; }
+.tka-sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Launcher */
+.tka-launch {
+  position: fixed; right: 20px; bottom: 20px; z-index: 1000;
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 12px 18px 12px 14px; border-radius: 999px;
+  background: var(--tka-accent); color: var(--tka-accent-ink);
+  border: 1.5px solid var(--tka-accent);
+  font: 600 15px/1.2 var(--tka-sans);
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .5), 0 0 22px rgba(34, 211, 238, .3);
+  transition: transform .12s ease, opacity .12s ease;
+}
+.tka-launch:hover { transform: translateY(-1px); }
+.tka-launch svg { width: 20px; height: 20px; flex: none; }
+.tka-launch:focus-visible, .tka-root button:focus-visible, .tka-root a:focus-visible, .tka-root textarea:focus-visible {
+  outline: 3px solid var(--tka-accent); outline-offset: 2px;
+}
+.tka-launch:focus-visible { outline-color: #fff; }
+.tka-root.tka-open .tka-launch { opacity: 0; pointer-events: none; transform: scale(.9); }
+
+/* Panel */
+.tka-panel {
+  position: fixed; right: 20px; bottom: 20px; z-index: 1001;
+  width: 390px; max-width: calc(100vw - 40px);
+  height: min(660px, calc(100vh - 100px));
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #03090c 0, var(--tka-panel) 55%, #08231f 100%);
+  border: 1px solid var(--tka-line); border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .65), 0 0 0 1px rgba(34, 211, 238, .05);
+  overflow: hidden;
+  animation: tka-in .16s ease-out;
+}
+@keyframes tka-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.tka-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 12px 12px 16px;
+  border-bottom: 1px solid var(--tka-line);
+  background: rgba(0, 0, 0, .35);
+}
+.tka-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex: none;
+  display: grid; place-items: center;
+  background: var(--tka-accent-soft); color: var(--tka-accent);
+  border: 1px solid rgba(34, 211, 238, .35);
+  font: 700 13px/1 var(--tka-display);
+}
+.tka-title { flex: 1; min-width: 0; }
+.tka-title h2 { margin: 0; font: 700 16px/1.2 var(--tka-display); color: var(--tka-ink); letter-spacing: 0; }
+.tka-title p { margin: 2px 0 0; font: 400 12px/1.3 var(--tka-mono); color: var(--tka-soft); }
+.tka-badge {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; vertical-align: 2px;
+  font: 600 10px/1.4 var(--tka-mono); letter-spacing: .04em;
+  color: var(--tka-orange); background: rgba(255, 138, 31, .14); border: 1px solid rgba(255, 138, 31, .35);
+}
+.tka-close {
+  width: 40px; height: 40px; flex: none; border-radius: 10px;
+  display: grid; place-items: center;
+  background: transparent; color: var(--tka-soft); border: 1px solid transparent; cursor: pointer;
+}
+.tka-close:hover { color: var(--tka-ink); background: rgba(255, 255, 255, .06); }
+.tka-close svg { width: 18px; height: 18px; }
+
+/* Messages */
+.tka-log {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px 14px 8px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: rgba(120, 190, 210, .3) transparent;
+}
+.tka-msg {
+  max-width: 88%; padding: 10px 13px; border-radius: 14px;
+  white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal;
+  font-size: 14.5px;
+}
+.tka-msg.tka-bot { align-self: flex-start; background: var(--tka-card); border: 1px solid var(--tka-line); border-bottom-left-radius: 4px; }
+.tka-msg.tka-user { align-self: flex-end; background: var(--tka-accent-soft); border: 1px solid rgba(34, 211, 238, .35); border-bottom-right-radius: 4px; }
+.tka-msg.tka-error { border-color: rgba(255, 138, 31, .45); background: rgba(255, 138, 31, .08); }
+.tka-msg a { color: var(--tka-accent); text-decoration: underline; text-underline-offset: 2px; }
+.tka-msg a:hover { color: #7ee8f8; }
+
+.tka-typing { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
+.tka-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--tka-soft); opacity: .4; animation: tka-dot 1.1s infinite ease-in-out; }
+.tka-typing i:nth-child(2) { animation-delay: .15s; }
+.tka-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes tka-dot { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+.tka-chips { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 2px 0 4px; }
+.tka-chip {
+  text-align: left; max-width: 100%;
+  padding: 8px 12px; border-radius: 12px;
+  background: transparent; color: var(--tka-ink);
+  border: 1px solid rgba(34, 211, 238, .4);
+  font: 500 13.5px/1.35 var(--tka-sans); cursor: pointer;
+}
+.tka-chip:hover { background: var(--tka-accent-soft); }
+
+/* Composer */
+.tka-form { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px 8px; border-top: 1px solid var(--tka-line); }
+.tka-input {
+  flex: 1; min-width: 0; resize: none;
+  min-height: 44px; max-height: 120px;
+  padding: 11px 12px; border-radius: 12px;
+  background: rgba(0, 0, 0, .45); color: var(--tka-ink);
+  border: 1px solid var(--tka-line);
+  font: 400 15px/1.4 var(--tka-sans);
+}
+.tka-input::placeholder { color: #7f98a1; }
+.tka-input:focus { border-color: rgba(34, 211, 238, .6); outline: none; }
+.tka-input:focus-visible { outline: 2px solid var(--tka-accent); outline-offset: 1px; }
+.tka-input:disabled { opacity: .55; }
+.tka-send {
+  width: 44px; height: 44px; flex: none; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--tka-accent); color: var(--tka-accent-ink); border: 0; cursor: pointer;
+}
+.tka-send:disabled { opacity: .4; cursor: default; }
+.tka-send svg { width: 20px; height: 20px; }
+.tka-count { padding: 0 14px; font: 400 11px/1.3 var(--tka-mono); color: var(--tka-soft); text-align: right; }
+.tka-count.tka-over { color: var(--tka-orange); }
+
+.tka-foot { padding: 4px 12px 12px; }
+.tka-book {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 999px;
+  background: var(--tka-orange); color: var(--tka-orange-ink);
+  border: 1.5px solid var(--tka-orange);
+  font: 700 14.5px/1.2 var(--tka-sans); text-decoration: none;
+  box-shadow: 0 0 18px rgba(255, 138, 31, .22);
+}
+.tka-book:hover { filter: brightness(1.06); }
+.tka-root .tka-book:focus-visible { outline-color: #fff; }
+.tka-book svg { width: 18px; height: 18px; }
+.tka-small { margin: 8px 2px 0; font-size: 11.5px; line-height: 1.4; color: var(--tka-soft); text-align: center; }
+
+/* Phones: full-screen sheet */
+@media (max-width: 520px) {
+  .tka-launch { right: 16px; bottom: 16px; padding: 11px 16px 11px 13px; font-size: 14.5px; }
+  .tka-panel {
+    inset: 0; right: 0; bottom: 0; width: 100%; max-width: none;
+    height: 100%; border-radius: 0; border: 0;
+  }
+  .tka-head { padding-top: max(12px, env(safe-area-inset-top)); }
+  .tka-foot { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .tka-msg { max-width: 92%; }
+  html.tka-lock, html.tka-lock body { overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tka-panel, .tka-typing i { animation: none; }
+  .tka-launch { transition: none; }
+}
+@media print { .tka-root { display: none; } }
