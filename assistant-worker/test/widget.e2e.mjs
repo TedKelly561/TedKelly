@@ -94,7 +94,7 @@ try {
     const panel = page.locator('.tka-panel');
     await panel.waitFor({ state: 'visible' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'tka-input');
-    assert.match(await page.locator('.tka-msg.tka-bot').first().textContent(), /Hi, I'm Ted's assistant \(AI\)\. Ask me how automation could work in your shop\./);
+    assert.match(await page.locator('.tka-msg.tka-bot').first().textContent(), /Hi, I'm Ted's assistant \(AI\)\. Ask me how automation could work in your business\./);
     assert.equal(await page.locator('.tka-chip').count(), 3);
     assert.match(await page.locator('.tka-small').textContent(), /Nothing you type is stored/);
     await shot(page, '02-desktop-open');

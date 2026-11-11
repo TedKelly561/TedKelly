@@ -20,7 +20,7 @@
   var MAX_CHARS = 1000;
   var MAILTO_MAX = 1800;
   var STORE_KEY = 'tka-chat-v1';
-  var GREETING = "Hi, I'm Ted's assistant (AI). Ask me how automation could work in your shop.";
+  var GREETING = "Hi, I'm Ted's assistant (AI). Ask me how automation could work in your business.";
   var FALLBACK = "Sorry, I can't reach the assistant right now. You can email Ted directly at " + EMAIL +
     ', or use the "Book a free 20-minute call" button below.';
   var SUGGESTIONS = [
@@ -140,7 +140,7 @@
   ]);
   var log = el('div', { 'class': 'tka-log', role: 'log', 'aria-label': 'Conversation', tabindex: '0' });
   var live = el('div', { 'class': 'tka-sr', 'aria-live': 'polite', 'aria-atomic': 'true' });
-  var input = el('textarea', { 'class': 'tka-input', id: 'tka-input', rows: '1', maxlength: String(MAX_CHARS), placeholder: 'Ask about your shop…', 'aria-label': 'Your question', autocomplete: 'off' });
+  var input = el('textarea', { 'class': 'tka-input', id: 'tka-input', rows: '1', maxlength: String(MAX_CHARS), placeholder: 'Ask about your business…', 'aria-label': 'Your question', autocomplete: 'off' });
   var send = el('button', { type: 'submit', 'class': 'tka-send', 'aria-label': 'Send', html: ICON_SEND });
   var form = el('form', { 'class': 'tka-form' }, [input, send]);
   var count = el('div', { 'class': 'tka-count', 'aria-live': 'polite', hidden: '' });
@@ -190,7 +190,7 @@
   function updateControls() {
     var atLimit = userTurns() >= MAX_TURNS;
     input.disabled = atLimit;
-    input.placeholder = atLimit ? 'Chat limit reached' : 'Ask about your shop…';
+    input.placeholder = atLimit ? 'Chat limit reached' : 'Ask about your business…';
     send.disabled = busy || atLimit || !input.value.trim();
     book.href = buildMailto();
     var len = input.value.length;
