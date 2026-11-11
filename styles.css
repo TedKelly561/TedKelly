@@ -91,7 +91,6 @@ h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin-bottom: 10px; }
 
 .project .sub, .feature .sub { font-family: var(--mono); font-size: .82rem; color: var(--accent); margin-bottom: 12px; }
 .badge { position: absolute; top: 20px; right: 20px; font-family: var(--mono); font-size: .7rem; padding: 4px 9px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); }
-.project h3 { padding-right: 150px; }
 .tags { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .tags li { font-family: var(--mono); font-size: .74rem; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); }
 .link { display: inline-block; margin-top: 16px; font-weight: 600; color: var(--accent); text-decoration: none; }
@@ -138,7 +137,6 @@ h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin-bottom: 10px; }
   .nav nav a:not(.btn) { display: none; }
   .feature { padding: 22px; }
   .badge { position: static; display: inline-block; margin-bottom: 12px; }
-  .project h3 { padding-right: 0; }
   .section, .band { padding-top: 56px; padding-bottom: 56px; }
 }
 
@@ -262,3 +260,6 @@ a.module:hover { border-color: var(--accent); transform: translateY(-2px); }
 .skill-wide strong { color: var(--ink); }
 .skill-wide .tags { margin-top: 0; }
 @media (max-width: 900px) { .skill-wide { grid-template-columns: 1fr; } }
+
+/* Accessibility helpers */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
