@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tedkelly.dev/sitemap.xml
