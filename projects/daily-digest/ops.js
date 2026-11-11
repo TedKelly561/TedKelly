@@ -405,7 +405,7 @@
     const unassigned = S.jobs.filter(j => j.status === 'new' && !j.techId && +new Date(j.createdAt) <= asOf).length;
 
     // Yesterday in numbers
-    const yA = dayA - DAY + 0, yB = dayA;
+    const yA = dayStart(dayA - 1), yB = dayA;               // calendar day, safe across DST
     const inY = iso => iso && +new Date(iso) >= yA && +new Date(iso) < yB;
     const yLog = st.log.filter(e => e.ts >= yA && e.ts < yB && !NOTICE[e.kind]);
     const completedY = S.jobs.filter(j => inY(j.completedAt));
