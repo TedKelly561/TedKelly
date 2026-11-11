@@ -424,7 +424,7 @@
     const d = new Date(now);
     d.setDate(d.getDate() + 1);
     while (d.getDay() === 0) d.setDate(d.getDate() + 1);
-    const diff = Math.round((d - new Date(new Date(now).setHours(0, 0, 0, 0))) / 86400000);
+    const diff = Math.round((new Date(d).setHours(0, 0, 0, 0) - new Date(now).setHours(0, 0, 0, 0)) / 86400000);
     return diff <= 1 ? 'tomorrow' : d.toLocaleDateString('en-US', { weekday: 'long' });
   }
   function draftText(t, S, now) {
@@ -433,14 +433,21 @@
     const tech = S.techs.find(x => x.id === t.techId);
     const what = (t.equipmentBase || t.trade || 'service').toLowerCase().replace(/^central ac$/, 'AC');
     const who = tech ? `${tech.name.split(' ')[0]}, our ${TRADE_PERSON[tech.trade] || 'technician'},` : 'a technician';
-    const day = nextBusinessDay(now || new Date());
+    const at = now ? new Date(now) : new Date();
+    const day = nextBusinessDay(at);
+    const hour = at.getHours();                           // the viewer's local time
+    const lateNight = hour >= 20 || hour < 7;             // quiet hours for homeowners
     let msg = `Hi ${first}, this is Summit Home Services. `;
     if (v.claimPrefix) msg += `${v.short} sent us your ${what} repair request${t.claim ? ' (claim ' + t.claim + ')' : ''}. `;
     else msg += `We got your message about the ${what}. `;
     if (t.urgency === 'Emergency') {
-      msg += `We're treating this as an emergency and can have ${who} there today. Will someone be home in the next 2 hours?`;
+      msg += lateNight
+        ? `We're treating this as an emergency and can have ${who} there first thing in the morning. Will someone be home at 8 AM?`
+        : `We're treating this as an emergency and can have ${who} there today. Will someone be home in the next 2 hours?`;
     } else if (t.urgency === 'High') {
-      msg += `We can get ${who} out as early as today. Which works better: morning (8-12) or afternoon (12-4)?`;
+      if (hour < 11) msg += `We can get ${who} out as early as today. Which works better: morning (8-12) or afternoon (12-4)?`;
+      else if (hour >= 11 && hour < 15) msg += `We can get ${who} out as early as this afternoon (12-4). Does that work, or is ${day} morning (8-12) better?`;
+      else msg += `We can get ${who} out as early as ${day}. Which works better: morning (8-12) or afternoon (12-4)?`;
     } else {
       msg += `We'd like to get ${who} out to you. Does ${day} morning (8-12) or afternoon (12-4) work better?`;
     }
@@ -869,8 +876,9 @@ Thanks, Dwight Okonkwo`,
   const vendorOf = id => S.vendors.find(v => v.id === id) || S.vendors[S.vendors.length - 1];
   const techOf = id => S.techs.find(t => t.id === id);
   const money = (n, d = 3) => '$' + Number(n || 0).toFixed(d);
-  const timeOf = iso => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
-  const clock = iso => new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  // Times show in the viewer's own time zone, with its short name (e.g. PST) so that's clear.
+  const timeOf = iso => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
+  const clock = iso => new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
   const dateOf = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const URG_CLASS = { Emergency: 'bad', High: 'warn', Normal: 'good' };
 
