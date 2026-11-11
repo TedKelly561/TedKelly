@@ -24,12 +24,14 @@ const PAGES = [
   { file: 'work-with-me/index.html', url: `${SITE}/work-with-me/`, title: 'Work with me (packages, how it works, FAQ)' },
   { file: 'safety/index.html', url: `${SITE}/safety/`, title: 'Safety method' },
   { file: 'case-study/index.html', url: `${SITE}/case-study/`, title: 'Case study (M5: moving off a growing Zapier bill)' },
+  { file: 'hire/index.html', url: `${SITE}/hire/`, title: 'Hire me (for employers: roles Ted is open to, experience, tools)' },
 ];
 
 const READMES = [
   { file: 'projects/work-order-intake/README.md', url: `${SITE}/projects/work-order-intake/`, title: 'M1 Email intake to ticket (Work Order Intake demo)' },
   { file: 'projects/daily-digest/README.md', url: `${SITE}/projects/daily-digest/`, title: 'M2 Health check and daily digest demo' },
   { file: 'projects/thread-updates/README.md', url: `${SITE}/projects/thread-updates/`, title: 'M3 Status updates on the original thread demo' },
+  { file: 'projects/payment-proofing/README.md', url: `${SITE}/projects/payment-proofing/`, title: 'M4 Payment proofing demo' },
   { file: 'projects/quote-builder/README.md', url: `${SITE}/projects/quote-builder/`, title: 'Toolkit demo: Quote Builder' },
   { file: 'projects/dispatch-board/README.md', url: `${SITE}/projects/dispatch-board/`, title: 'Toolkit demo: Dispatch Board' },
   { file: 'projects/kpi-dashboard/README.md', url: `${SITE}/projects/kpi-dashboard/`, title: "Toolkit demo: Owner's KPI Dashboard" },
@@ -134,7 +136,7 @@ function build() {
     parts.push(`<page title="${r.title}" url="${r.url}">\n${text}\n</page>`);
   }
   const notes = [
-    'Module numbering used on the site: M1 = Email intake to ticket (live demo), M2 = Health check and daily digest (live demo), M3 = Status updates on the original thread (live demo), M4 = Payment proofing (coming soon, no demo yet), M5 = Move off a growing Zapier bill (the case study). The Service Business Toolkit demos (Work Order Intake, Quote Builder, Dispatch Board, Owner\'s Dashboard) are extra demos on the fictional Summit Home Services.',
+    'Module numbering used on the site: M1 = Email intake to ticket (live demo), M2 = Health check and daily digest (live demo), M3 = Status updates on the original thread (live demo), M4 = Payment proofing (live demo), M5 = Move off a growing Zapier bill (the case study). The Service Business Toolkit demos (Work Order Intake, Quote Builder, Dispatch Board, Owner\'s Dashboard) are extra demos on the fictional Summit Home Services.',
     'Contact: ted@tedkelly.dev. The first step is a free 20-minute call.',
   ];
   const content = `<site_content>\n${notes.join('\n')}\n\n${parts.join('\n\n')}\n</site_content>`;

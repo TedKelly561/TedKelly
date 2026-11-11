@@ -57,20 +57,13 @@ The key lives only in Cloudflare's encrypted secret store. It is not in this rep
 
 ### Point the site at the Worker
 
-The four pages (`index.html`, `case-study/`, `safety/`, `work-with-me/`) load the widget with a placeholder:
+The five pages (`index.html`, `case-study/`, `safety/`, `work-with-me/`, `hire/`) load the widget pointed at the deployed Worker:
 
 ```html
-<script src="/assets/assistant.js" data-endpoint="https://tedkelly-assistant.REPLACE.workers.dev/chat" defer></script>
+<script src="/assets/assistant.js" data-endpoint="https://tedkelly-assistant.tseay11.workers.dev/chat" defer></script>
 ```
 
-Replace `REPLACE` with your workers.dev subdomain in all four:
-
-```bash
-sed -i 's#tedkelly-assistant.REPLACE.workers.dev#tedkelly-assistant.<your-subdomain>.workers.dev#' \
-  index.html case-study/index.html safety/index.html work-with-me/index.html
-```
-
-Until then the widget still opens and shows a friendly "can't reach the assistant, email Ted" message with the booking button, and makes no network request.
+If `data-endpoint` is ever set back to a placeholder containing `REPLACE`, the widget still opens and shows a friendly "can't reach the assistant, email Ted" message with the booking button, and makes no network request.
 
 ## Guardrails (all server-side)
 

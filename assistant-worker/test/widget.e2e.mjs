@@ -18,6 +18,11 @@ const siteRoot = path.resolve(here, '..', '..');
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 const SHOTS = process.env.SCREENSHOTS || '';
 const PLACEHOLDER = 'https://tedkelly-assistant.REPLACE.workers.dev/chat';
+// The endpoint the pages carry in production. The test server rewrites it to
+// the local Worker (or to the placeholder, for the not-configured test), so
+// these tests never call the live Worker.
+const LIVE = 'https://tedkelly-assistant.tseay11.workers.dev/chat';
+const WIDGET_PAGES = ['index.html', 'case-study/index.html', 'safety/index.html', 'work-with-me/index.html', 'hire/index.html'];
 
 const mock = await startMockAnthropic({ delayMs: 25 });
 const worker = await startWorker({ port: 8798, anthropicPort: mock.port });
@@ -32,7 +37,7 @@ const site = http.createServer(async (req, res) => {
   try {
     let data = await readFile(file);
     const ext = path.extname(file);
-    if (ext === '.html' && endpoint !== PLACEHOLDER) data = Buffer.from(data.toString().replaceAll(PLACEHOLDER, endpoint));
+    if (ext === '.html') data = Buffer.from(data.toString().replaceAll(LIVE, endpoint));
     res.writeHead(200, { 'content-type': TYPES[ext] || 'application/octet-stream' });
     res.end(data);
   } catch { res.writeHead(404); res.end('not found'); }
@@ -262,6 +267,15 @@ try {
     await page.locator('.tka-msg.tka-error').waitFor({ timeout: 10000 });
     assert.deepEqual(errors.filter((e) => !/CORS|Access-Control/.test(e)), []);
     await close();
+  });
+
+  await test('every widget page points at the live Worker endpoint', async () => {
+    for (const f of WIDGET_PAGES) {
+      const html = await readFile(path.join(siteRoot, f), 'utf8');
+      const tags = html.match(/<script src="\/assets\/assistant\.js"[^>]*>/g) || [];
+      assert.equal(tags.length, 1, `${f}: one widget tag`);
+      assert.ok(tags[0].includes(`data-endpoint="${LIVE}"`), `${f}: ${tags[0]}`);
+    }
   });
 
   await test('demo pages do not load the widget', async () => {
