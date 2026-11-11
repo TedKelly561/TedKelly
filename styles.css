@@ -262,3 +262,8 @@ a.module:hover { border-color: var(--accent); transform: translateY(-2px); }
 .skill-wide strong { color: var(--ink); }
 .skill-wide .tags { margin-top: 0; }
 @media (max-width: 900px) { .skill-wide { grid-template-columns: 1fr; } }
+
+/* Savings calculator card on the homepage */
+.module-calc { border-style: dashed; border-color: rgba(255,138,31,.45); }
+a.module-calc:hover { border-color: #ff8a1f; }
+.module-calc .module-top .mono { color: #ff8a1f; }
