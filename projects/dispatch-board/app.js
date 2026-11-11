@@ -265,7 +265,7 @@
     $('#board').innerHTML = html;
 
     const cap = S.techs.length * CAPACITY;
-    $('#daySummary').textContent = `${dayJobs.length} jobs · ${totalBooked}h booked of ${cap}h (${Math.round(totalBooked / cap * 100)}%)`;
+    $('#daySummary').textContent = `${dayJobs.length} job${dayJobs.length === 1 ? '' : 's'} · ${totalBooked}h booked of ${cap}h (${Math.round(totalBooked / cap * 100)}%)`;
     $('#legend').innerHTML = colorBy === 'tech'
       ? S.techs.map(t => `<span><i style="--c:${t.color}"></i>${esc(t.name.split(' ')[0])}</span>`).join('')
       : ['scheduled', 'en_route', 'in_progress', 'waiting_parts', 'completed'].map(s => `<span><i style="--c:${STATUS_COLOR[s]}"></i>${S.statusLabels[s]}</span>`).join('');
