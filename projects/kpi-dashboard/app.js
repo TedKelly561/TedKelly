@@ -342,9 +342,12 @@
     }
     const slot = pw / buckets.length, bw = Math.min(24, Math.max(4, slot * 0.62));
     const labelEvery = Math.ceil(buckets.length / Math.max(2, Math.floor(pw / 62)));
+    // Readable column by column: the chart is a group holding a list of columns.
+    svg.setAttribute('role', 'group');
+    const cols = svgEl('g', { role: 'list', 'aria-label': `Revenue ${buckets[0].daily ? 'per day' : 'per week'}` }, svg);
     buckets.forEach((k, i) => {
       const x = ml + i * slot + (slot - bw) / 2;
-      const g = svgEl('g', { class: 'col', role: 'listitem', 'aria-label': `${k.label}: ${money(k.total)}` }, svg);
+      const g = svgEl('g', { class: 'col', role: 'listitem', 'aria-label': `${k.label}: ${money(k.total)}` }, cols);
       svgEl('rect', { x: ml + i * slot, y: mt, width: slot, height: ph, class: 'hit' }, g);
       const marks = svgEl('g', { class: 'marks' }, g);
       let y = mt + ph;
