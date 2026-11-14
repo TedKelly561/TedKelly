@@ -26,13 +26,14 @@
 <header class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="/"><img src="/assets/tk-chip.svg" alt="" width="36" height="36"><span class="wm"><b>TED KELLY</b><small>BUSINESS SYSTEM SOLUTIONS</small></span></a>
-    <nav aria-label="Main">
+    <nav aria-label="Main" id="main-nav">
       <a href="/#build">What I build</a>
       <a href="/#skills">Skills</a>
       <a href="/case-study/">Case study</a>
       <a href="/hire/">Hire me</a>
       <a class="btn small" href="/work-with-me/">Work with me</a>
     </nav>
+    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="main-nav" aria-label="Open menu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path class="mb-open" d="M4 7h16M4 12h16M4 17h16"/><path class="mb-close" d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
 </header>
 <main>
@@ -105,7 +106,7 @@
     <div class="wrap">
       <h2>See if it fits your business</h2>
       <p class="section-lead">A free 20-minute call is enough to know whether I can help.</p>
-      <div class="cta-row"><a class="btn" href="mailto:ted@tedkelly.dev?subject=Free%2020-minute%20call">Email ted@tedkelly.dev</a></div>
+      <div class="cta-row"><a class="btn" data-book="with-email" href="mailto:ted@tedkelly.dev?subject=Free%2020-minute%20call">Email ted@tedkelly.dev</a></div>
     </div>
   </section>
 </main>
@@ -114,5 +115,6 @@
   <span class="footer-links"><a href="/case-study/">Case study</a> · <a href="/safety/">Safety method</a> · <a href="/work-with-me/">Work with me</a> · <a href="/savings/">Savings calculator</a> · <a href="/hire/">Hire me</a> · <a href="/projects/">Demos</a></span>
 </footer>
 <script src="/assets/assistant.js" data-endpoint="https://tedkelly-assistant.tseay11.workers.dev/chat" defer></script>
+<script src="/assets/site.js" defer></script>
 </body>
 </html>
