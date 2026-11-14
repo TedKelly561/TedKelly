@@ -285,3 +285,7 @@ a.module-calc:hover { border-color: #ff8a1f; }
   .nav.open nav a:not(.btn) { display: block; padding: 14px 4px; font-size: 1.05rem; color: var(--ink); border-bottom: 1px solid var(--line); }
   .nav.open nav a.btn { margin-top: 14px; text-align: center; }
 }
+
+/* "Just for fun" line under the project grid */
+.fun-line { margin-top: 22px; color: var(--ink-soft); }
+.fun-line a { color: var(--accent); }
